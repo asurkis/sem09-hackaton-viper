@@ -19,3 +19,8 @@ Vim-Inspired Pixel-Art Editor
 ## Репозиторий
 
 https://github.com/asurkis/sem9-hackaton-viper
+
+## Страница CSC-Wiki
+
+https://wiki.compscicenter.ru/index.php/VIPER
+
