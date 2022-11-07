@@ -24,3 +24,7 @@ https://github.com/asurkis/sem9-hackaton-viper
 
 https://wiki.compscicenter.ru/index.php/VIPER
 
+## Использованные ресурсы
+- [raylib](https://raylib.com)
+- [Kenney's Pixel Platform Industrial Expansion](https://kenney.nl/assets/pixel-platformer-industrial-expansion)
+  &mdash; использованный для примера пак.
