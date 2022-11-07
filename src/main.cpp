@@ -1,65 +1,75 @@
-#include "raylib.h"
-#include <stdio.h>
+#include <SFML/Graphics.hpp>
+#include <SFML/Window.hpp>
 
-int main(int argc, char **argv) {
-  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-  InitWindow(800, 600, "Example window");
-
-  Texture2D tex;
+int main(int argc, char** argv) {
+  sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+  sf::Texture texture;
   if (argc > 1) {
-    tex = LoadTexture(argv[1]);
+    texture.loadFromFile(argv[1]);
   } else {
-    Image img = GenImageColor(32, 32, LIME);
-    tex = LoadTextureFromImage(img);
-    UnloadImage(img);
   }
+  sf::Sprite sprite(texture);
 
   int scale = 8;
   int cursorX = 0;
   int cursorY = 0;
 
-  while (!WindowShouldClose()) {
-    if (IsKeyPressed(KEY_H)) {
-      cursorX--;
-    }
-    if (IsKeyPressed(KEY_J)) {
-      cursorY++;
-    }
-    if (IsKeyPressed(KEY_K)) {
-      cursorY--;
-    }
-    if (IsKeyPressed(KEY_L)) {
-      cursorX++;
+  while (window.isOpen()) {
+    sf::Event evt;
+    while (window.pollEvent(evt)) {
+      switch (evt.type) {
+        case sf::Event::Closed:
+          window.close();
+          break;
+
+        case sf::Event::TextEntered:
+          switch (evt.text.unicode) {
+            case 'h':
+              --cursorX;
+              break;
+            case 'j':
+              ++cursorY;
+              break;
+            case 'k':
+              --cursorY;
+              break;
+            case 'l':
+              ++cursorX;
+              break;
+          }
+          break;
+          default: break;
+      }
     }
     if (cursorX < 0) {
       cursorX = 0;
     }
-    if (cursorX >= tex.width) {
-      cursorX = tex.width - 1;
+    if (cursorX >= texture.getSize().x) {
+      cursorX = texture.getSize().x - 1;
     }
     if (cursorY < 0) {
       cursorY = 0;
     }
-    if (cursorY >= tex.height) {
-      cursorY = tex.height - 1;
+    if (cursorY >= texture.getSize().y) {
+      cursorY = texture.getSize().y - 1;
     }
 
-    BeginDrawing();
-    ClearBackground(RAYWHITE);
-    int w = GetScreenWidth();
-    int h = GetScreenHeight();
-    int imgLeft = (w - scale * tex.width) / 2;
-    int imgTop = (h - scale * tex.height) / 2;
-    DrawTextureEx(tex, Vector2{(float)imgLeft, (float)imgTop}, 0.0f, scale,
-                  WHITE);
-    DrawRectangleLines(imgLeft + scale * cursorX - 1,
-                       imgTop + scale * cursorY - 1, scale + 2, scale + 2,
-                       LIGHTGRAY);
-    DrawRectangleLines(imgLeft + scale * cursorX - 2,
-                       imgTop + scale * cursorY - 2, scale + 4, scale + 4,
-                       GRAY);
-    EndDrawing();
+    window.clear(sf::Color::White);
+
+    sf::Vector2u pos = (window.getSize() - 8u * texture.getSize()) / 2u;
+    sprite.setScale(8, 8);
+    sprite.setPosition((float)pos.x, (float)pos.y);
+    window.draw(sprite);
+
+    sf::RectangleShape wrapAround;
+    wrapAround.setPosition(pos.x + 8 * cursorX, pos.y + 8 * cursorY);
+    wrapAround.setSize(sf::Vector2f(8, 8));
+    wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
+    wrapAround.setOutlineColor(sf::Color::Cyan);
+    wrapAround.setOutlineThickness(2.0f);
+    window.draw(wrapAround);
+
+    window.display();
   }
-  CloseWindow();
   return 0;
 }
