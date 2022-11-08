@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/Window.hpp>
 
 #include "Context.hpp"
@@ -6,6 +7,7 @@
 
 int main(int argc, char** argv) {
   sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+
   Handler handler;
   Context context;
   if (argc > 1) {
@@ -29,11 +31,6 @@ int main(int argc, char** argv) {
   context.palette['w' - 'a' + 10] = sf::Color(204, 102, 0);
   context.palette['s' - 'a' + 10] = sf::Color(255, 153, 51);
   context.palette['x' - 'a' + 10] = sf::Color(255, 204, 153);
-
-  // yellow edc
-  context.palette['e' - 'a' + 10] = sf::Color(204, 204, 0);
-  context.palette['d' - 'a' + 10] = sf::Color(255, 255, 51);
-  context.palette['c' - 'a' + 10] = sf::Color(255, 255, 153);
 
   // green edc
   context.palette['e' - 'a' + 10] = sf::Color(0, 204, 0);
