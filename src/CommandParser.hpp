@@ -42,35 +42,6 @@ class CommandParser {
   std::wstring commandName;
   std::vector<std::wstring> commandArgs;
 
-<<<<<<< HEAD
-    int handleCommand(const std::wstring& commandString, Context& context) {
-      auto cur_command = parseCommand(commandString);
-      switch(cur_command){
-        case QUIT:
-          context.quit();
-          break;
-        case SAVE_FILE:
-          context.saveFile();
-          break;
-        case LOAD_FILE:
-          context.loadFile(ws2s(commandArgs[0]));
-          break;
-        case EXPAND:
-          context.expand(stoi(commandArgs[0]), commandArgs[1]);
-          break;
-        case NEW_FILE:
-          //default
-          uint32_t width=50,heigth=50;
-          //if given
-          if(commandArgs.size()>1) {
-            width  = std::stoi(commandArgs[1]);
-            heigth = std::stoi(commandArgs[2]);
-          }
-          context.newFile({width, heigth});
-          break;
-      }
-      return 0;
-=======
  public:
   int handleCommand(const std::wstring& commandString, Context& context) {
     auto cur_command = parseCommand(commandString);
@@ -79,6 +50,14 @@ class CommandParser {
       case SAVE_FILE: context.saveFile(); break;
       case LOAD_FILE: context.loadFile(ws2s(commandArgs[0])); break;
       case EXPAND: context.expand(stoi(commandArgs[0]), commandArgs[1]); break;
+      case NEW_FILE:
+        //if given
+        if(commandArgs.size()>1) {
+          int32_t width  = std::stoi(commandArgs[1]),heigth = std::stoi(commandArgs[2]);
+          if(width>0 && heigth>0)
+            context.newFile({width, heigth});
+        }
+        break;
     }
     return 0;
   }
@@ -112,7 +91,6 @@ class CommandParser {
 
     while (spacePos != command.end() && *spacePos == ' ') {
       ++spacePos;
->>>>>>> origin/main
     }
 
     auto prevPos = spacePos;
