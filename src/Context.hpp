@@ -187,6 +187,16 @@ class Context : public sf::Drawable {
 
     lastFilepath="";
   }
+
+  void putColor(std::string const& key,int32_t red, int32_t green, int32_t blue){
+      int indPal=0;
+      if ('0' <= key[0] && key[0] <= '9')
+          indPal=key[0]-'0';
+      else
+          indPal=10+key[0]-'a';
+
+      palette[indPal]=sf::Color(red, green, blue);
+  }
 };
 
 #endif  // Context_hpp_INCLUDED
