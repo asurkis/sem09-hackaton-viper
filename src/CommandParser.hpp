@@ -39,7 +39,7 @@ public:
     }
     std::unordered_map<std::wstring, Commands> commandsDict;
     std::wstring commandName;
-    std::wstring commandArgs;
+    std::vector<std::wstring> commandArgs;
 
     int parseCommand(const std::wstring& commandString) {
         setCommandNameArgs(commandString);
@@ -50,19 +50,24 @@ public:
     }
 
     int setCommandNameArgs(const std::wstring & command) {
-        auto spacePos = find(command.begin(), command.end(), L' ');
-        if (spacePos == command.end()) {
-            commandName = command;
-            commandArgs = L"";
-            return 0;
-        }
-        auto spaceIndex = spacePos - command.begin();
-        commandName = command.substr(0, spaceIndex);
-        commandArgs = command.substr(spaceIndex + 1, command.size());
-        return 0;
+      commandArgs = {};
+      auto spacePos = find(command.begin(), command.end(), ' ');
+      commandName = command.substr(0, spacePos - command.begin());
+
+      while(spacePos != command.end() && *spacePos == ' ')
+        ++spacePos;
+
+      auto prevPos = spacePos;
+      while (prevPos != command.end()) {
+        spacePos = find(prevPos, command.end(), ' ');
+        commandArgs.push_back(command.substr(prevPos - command.begin(), spacePos - prevPos)); /** second arg is size */
+        while(spacePos != command.end() && *spacePos == ' ')
+          ++spacePos;
+        prevPos = spacePos;
+      }
+
+      return 0;
     }
-
-
 };
 
 
