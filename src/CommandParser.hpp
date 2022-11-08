@@ -10,36 +10,51 @@
 #define VIPER_COMMANDPARSER_H
 
 enum Commands {
-    COMMAND1 = 0,
-    COMMAND2 = 1,
-    NUM_COMMANDS,
+    ERROR = -1,
+    QUIT,
+    SAVE_FILE,
+    LOAD_FILE,
+    NEW_FILE,
+    SCALE,
+    EXPAND,
+    LINE,
+    REC,
+    PALATTE,
+    SHADING,
 };
 
 class CommandParser {
 public:
-    CommandParser() {
-        //set dict
+    CommandParser(){
+        commandsDict=std::unordered_map<std::wstring, Commands> ({{L"q", QUIT},
+                                                                 {L"w", SAVE_FILE},
+                                                                 {L"e",LOAD_FILE },
+                                                                 {L"new",NEW_FILE},
+                                                                 {L"scale",SCALE },
+                                                                 {L"expand", EXPAND},
+                                                                 {L"line",LINE},
+                                                                 {L"rec", REC},
+                                                                 {L"p",PALATTE },
+                                                                 {L"r",SHADING }});
     }
-    std::unordered_map<std::string, int> commandsDict;
-    std::string commandName;
-    std::string commandArgs;
+    std::unordered_map<std::wstring, Commands> commandsDict;
+    std::wstring commandName;
+    std::wstring commandArgs;
 
-    int parseCommand(Context& context) {
-        std::string commandString = "extract from Context"; //command extract from Context
+    int parseCommand(const std::wstring& commandString) {
         setCommandNameArgs(commandString);
-
-        auto id = getCommandId(commandName);
-        if (NUM_COMMANDS <= id) {
-            return -1; // ERROR
-        }
-        return id;
+        if(commandsDict.count(commandName))
+          return commandsDict[commandName];
+        else
+          return ERROR;
     }
 
-    int setCommandNameArgs(const std::string & command) {
-        auto spacePos = find(command.begin(), command.end(), ' ');
+    int setCommandNameArgs(const std::wstring & command) {
+        auto spacePos = find(command.begin(), command.end(), L' ');
         if (spacePos == command.end()) {
             commandName = command;
-            commandArgs = "";
+            commandArgs = L"";
+            return 0;
         }
         auto spaceIndex = spacePos - command.begin();
         commandName = command.substr(0, spaceIndex);
@@ -47,13 +62,6 @@ public:
         return 0;
     }
 
-    int getCommandId(const sf::String& commandName) {
-        auto it = commandsDict.find(commandName);
-        if (it != commandsDict.end()) {
-            return it->second;
-        }
-        return NUM_COMMANDS;
-    }
 
 };
 
