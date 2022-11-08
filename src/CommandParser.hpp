@@ -12,7 +12,7 @@
 enum Commands {
     COMMAND1 = 0,
     COMMAND2 = 1,
-    NUM_COMMANDS;
+    NUM_COMMANDS,
 };
 
 class CommandParser {
@@ -44,6 +44,7 @@ public:
         auto spaceIndex = spacePos - command.begin();
         commandName = command.substr(0, spaceIndex);
         commandArgs = command.substr(spaceIndex + 1, command.size());
+        return 0;
     }
 
     int getCommandId(const sf::String& commandName) {
