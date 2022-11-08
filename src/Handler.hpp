@@ -12,38 +12,68 @@ sf::Uint32 constexpr ESCAPE = 27;
 
 enum Mode {
   MODE_NORMAL = 0,
-  MODE_PRE_CORRECT,
-  MODE_CORRECT,
+  MODE_VISUAL,
+  MODE_PRE_EDIT_ONE,
+  MODE_EDIT_ONE,
+  MODE_PRE_EDIT,
+  MODE_EDIT,
   MODE_COMMAND,
-  MODE_VISUAL
 };
 
 class Handler {
   std::wstring command;
   Mode currentMode = MODE_NORMAL;
+  Mode prevMode = MODE_NORMAL;
 
  public:
   void handleKey(Context& context, sf::Event::KeyEvent const& evt) {}
 
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
-      case MODE_VISUAL:
       case MODE_NORMAL:
+      case MODE_VISUAL:
         switch (c) {
+          case ESCAPE:
+            prevMode = MODE_NORMAL;
+            currentMode = MODE_NORMAL;
+            break;
+
           case 'h':
             context.moveCursor(-1, 0);
+            if (currentMode == MODE_NORMAL) {
+              context.dropSelection();
+            }
             break;
 
           case 'j':
             context.moveCursor(0, 1);
+            if (currentMode == MODE_NORMAL) {
+              context.dropSelection();
+            }
             break;
 
           case 'k':
             context.moveCursor(0, -1);
+            if (currentMode == MODE_NORMAL) {
+              context.dropSelection();
+            }
             break;
 
           case 'l':
             context.moveCursor(1, 0);
+            if (currentMode == MODE_NORMAL) {
+              context.dropSelection();
+            }
+            break;
+
+          case 'r':
+            prevMode = currentMode;
+            currentMode = MODE_PRE_EDIT_ONE;
+            break;
+
+          case 'c':
+            prevMode = currentMode;
+            currentMode = MODE_PRE_EDIT;
             break;
 
           case 'v':
@@ -52,6 +82,7 @@ class Handler {
             } else {
               currentMode = MODE_NORMAL;
             }
+            break;
 
           case ':':
             command = L":";
@@ -60,9 +91,25 @@ class Handler {
         }
         break;
 
-      case MODE_PRE_CORRECT:
+      case MODE_PRE_EDIT_ONE:
+        // TODO: insert actual mode
+        if (c == ESCAPE) {
+        } else if ('0' <= c && c <= '9') {
+          context.replaceColor(c - '0');
+        } else if ('a' <= c && c <= 'z') {
+          context.replaceColor(c - 'a');
+        }
+        currentMode = prevMode;
+        break;
+
+      case MODE_EDIT_ONE:
+        // TODO: insert actual mode
+        currentMode = MODE_NORMAL;
+        break;
+
+      case MODE_PRE_EDIT:
         switch (c) {
-          case 27:
+          case ESCAPE:
             currentMode = MODE_NORMAL;
 
           case 'h':
@@ -76,17 +123,30 @@ class Handler {
         }
         break;
 
-      case MODE_CORRECT:
+      case MODE_EDIT:
+        // TODO: insert actual mode
+        currentMode = MODE_NORMAL;
         break;
 
       case MODE_COMMAND:
         if (c == '\n') {
-        } else if (c == 27) {
+          handleCommand(context);
+          command.clear();
+          currentMode = MODE_NORMAL;
+        } else if (c == ESCAPE) {
+          command.clear();
+          currentMode = MODE_NORMAL;
+        } else if (c == '\b') {
+          if (!command.empty()) {
+          }
+        } else {
+          command.push_back(c);
         }
-        command.push_back(c);
         break;
     }
   }
+
+  void handleCommand(Context& context) {}
 };
 
 #endif  // Handler_hpp_INCLUDED
