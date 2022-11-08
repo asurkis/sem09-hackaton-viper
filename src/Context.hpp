@@ -69,6 +69,8 @@ class Context {
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
     wrapAround.setOutlineThickness(2.0f);
+
+
     window.draw(wrapAround);
   }
 };

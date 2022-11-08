@@ -41,6 +41,19 @@ public:
     std::wstring commandName;
     std::vector<std::wstring> commandArgs;
 
+    int handleCommand(const std::wstring& commandString, Context& context) {
+      auto cur_command = parseCommand(commandString);
+      switch(cur_command){
+        case QUIT:
+          context.quit();
+          break;
+        case SAVE_FILE:
+          context.saveFile();
+          break;
+      }
+      return 0;
+    }
+
     int parseCommand(const std::wstring& commandString) {
         setCommandNameArgs(commandString);
         if(commandsDict.count(commandName))

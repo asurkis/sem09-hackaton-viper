@@ -132,7 +132,7 @@ class Handler {
 
       case MODE_COMMAND:
         if (c == L'\r') {
-          handleCommand(context);
+          parser.handleCommand(command, context);
           command.clear();
           currentMode = prevMode;
         } else if (c == ESCAPE) {
@@ -145,18 +145,6 @@ class Handler {
         } else {
           command.push_back(c);
         }
-        break;
-    }
-  }
-
-  void handleCommand(Context& context) {
-    auto cur_command = parser.parseCommand(command);
-    switch(cur_command){
-      case QUIT:
-          context.quit();
-          break;
-      case SAVE_FILE:
-        context.saveFile();
         break;
     }
   }
