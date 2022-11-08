@@ -14,8 +14,8 @@ class Context : public sf::Drawable {
   sf::Vector2u select;
   std::string lastFilepath;
   unsigned int currentScale = 16;
-  bool quitting             = false;
   unsigned int fontSize     = 16;
+  bool quitting             = false;
 
  public:
   std::vector<sf::Color> palette;
@@ -31,7 +31,6 @@ class Context : public sf::Drawable {
       std::cout << "Failed!" << std::endl;
     }
   }
-
 
   void quit() { quitting = true; }
   bool isQuitting() const { return quitting; }
@@ -51,10 +50,7 @@ class Context : public sf::Drawable {
     buf.saveToFile(lastFilepath);
   }
 
-  void expand(int offset, const std::wstring& direction) {
-
-  }
-
+  void expand(int offset, const std::wstring& direction) {}
 
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
@@ -99,7 +95,7 @@ class Context : public sf::Drawable {
     sf::Vector2u mainSize = target.getSize();
     auto localBounds      = text.getLocalBounds();
     auto lineSpacing      = mainFont.getLineSpacing(fontSize);
-    lineSpacing = lineSpacing * 3 / 2;
+    lineSpacing           = lineSpacing * 3 / 2;
     mainSize.y -= lineSpacing;
     text.setPosition(sf::Vector2f(0.0f, mainSize.y));
 
