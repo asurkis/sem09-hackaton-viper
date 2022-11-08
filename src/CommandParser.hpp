@@ -50,6 +50,14 @@ class CommandParser {
       case SAVE_FILE: context.saveFile(); break;
       case LOAD_FILE: context.loadFile(ws2s(commandArgs[0])); break;
       case EXPAND: context.expand(stoi(commandArgs[0]), commandArgs[1]); break;
+      case NEW_FILE:
+        //if given
+        if(commandArgs.size()==2) {
+          int32_t width  = std::stoi(commandArgs[0]), heigth = std::stoi(commandArgs[1]);
+          if(width>0 && heigth>0)
+            context.newFile({width, heigth});
+        }
+        break;
     }
     return 0;
   }
@@ -69,11 +77,10 @@ class CommandParser {
 
   int parseCommand(const std::wstring& commandString) {
     setCommandNameArgs(commandString);
-    auto iter = commandsDict.find(commandString);
-    if (iter == commandsDict.end()) {
+    if(commandsDict.count(commandName)==0)
       return ERROR;
-    }
-    return iter->second;
+    else
+      return commandsDict.at(commandName);
   }
 
   int setCommandNameArgs(const std::wstring& command) {

@@ -29,6 +29,7 @@ inline std::wstring_view contextPrefix(Mode mode) {
     case MODE_EDIT: return L"EDIT";
     case MODE_COMMAND: return L":";
   }
+  return L"";
 }
 
 class Handler {
