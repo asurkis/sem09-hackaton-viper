@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include "CommandParser.hpp"
 #include <string_view>
 
 sf::Uint32 constexpr ESCAPE = 27;
@@ -34,7 +35,8 @@ inline std::wstring_view contextPrefix(Mode mode) {
 class Handler {
   std::wstring command;
   Mode currentMode = MODE_NORMAL;
-  Mode prevMode    = MODE_NORMAL;
+  Mode prevMode = MODE_NORMAL;
+  CommandParser parser;
 
  public:
   void handleCharacter(Context& context, sf::Uint32 c) {
@@ -94,8 +96,9 @@ class Handler {
             break;
 
           case ':':
-            command     = L":";
+            command.clear();
             currentMode = MODE_COMMAND;
+
             break;
         }
         break;
@@ -128,7 +131,7 @@ class Handler {
 
       case MODE_COMMAND:
         if (c == L'\r') {
-          handleCommand(context);
+          parser.handleCommand(command, context);
           command.clear();
           currentMode = prevMode;
         } else if (c == ESCAPE) {
@@ -149,14 +152,6 @@ class Handler {
       context.statusLine = command;
     } else {
       context.statusLine = std::wstring_view();
-    }
-  }
-
-  void handleCommand(Context& context) {
-    if (command == L":q") {
-      context.quit();
-    } else if (command == L":w") {
-      context.saveFile();
     }
   }
 };

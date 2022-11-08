@@ -32,6 +32,7 @@ class Context : public sf::Drawable {
     }
   }
 
+
   void quit() { quitting = true; }
   bool isQuitting() const { return quitting; }
 
@@ -49,6 +50,11 @@ class Context : public sf::Drawable {
     sf::Image buf = image.copyToImage();
     buf.saveToFile(lastFilepath);
   }
+
+  void expand(int offset, const std::wstring& direction) {
+
+  }
+
 
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
