@@ -1,14 +1,13 @@
 #ifndef Handler_hpp_INCLUDED
 #define Handler_hpp_INCLUDED
 
-#include "Context.hpp"
-
 #include <SFML/Window.hpp>
 #include <iostream>
 #include <ostream>
 #include <string>
-#include "CommandParser.hpp"
 #include <string_view>
+#include "CommandParser.hpp"
+#include "Context.hpp"
 
 sf::Uint32 constexpr ESCAPE = 27;
 
@@ -35,7 +34,7 @@ inline std::wstring_view contextPrefix(Mode mode) {
 class Handler {
   std::wstring command;
   Mode currentMode = MODE_NORMAL;
-  Mode prevMode = MODE_NORMAL;
+  Mode prevMode    = MODE_NORMAL;
   CommandParser parser;
 
  public:

@@ -14,8 +14,8 @@ class Context : public sf::Drawable {
   sf::Vector2u select;
   std::string lastFilepath;
   unsigned int currentScale = 16;
-  bool quitting             = false;
   unsigned int fontSize     = 16;
+  bool quitting             = false;
 
  public:
   std::vector<sf::Color> palette;
@@ -23,15 +23,8 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   Context() : palette(36) {
-    std::cout << "Loading main font...";
-    if (mainFont.loadFromFile(
-            "Terminess (TTF) Bold Nerd Font Complete Mono.ttf")) {
-      std::cout << "Success!" << std::endl;
-    } else {
-      std::cout << "Failed!" << std::endl;
-    }
+    mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
   }
-
 
   void quit() { quitting = true; }
   bool isQuitting() const { return quitting; }
@@ -51,10 +44,7 @@ class Context : public sf::Drawable {
     buf.saveToFile(lastFilepath);
   }
 
-  void expand(int offset, const std::wstring& direction) {
-
-  }
-
+  void expand(int offset, const std::wstring& direction) {}
 
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
@@ -99,13 +89,12 @@ class Context : public sf::Drawable {
     sf::Vector2u mainSize = target.getSize();
     auto localBounds      = text.getLocalBounds();
     auto lineSpacing      = mainFont.getLineSpacing(fontSize);
-    lineSpacing = lineSpacing * 3 / 2;
-    mainSize.y -= lineSpacing;
-    text.setPosition(sf::Vector2f(0.0f, mainSize.y));
+    mainSize.y -= lineSpacing * 3 / 2;
+    text.setPosition(sf::Vector2f(0.0f, mainSize.y + lineSpacing * 1 / 4));
 
     sf::RectangleShape backgroundRect;
     backgroundRect.setPosition(sf::Vector2f(0.0f, mainSize.y));
-    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing));
+    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
     backgroundRect.setFillColor(sf::Color(0xcccc00ff));
 
     target.draw(backgroundRect);
