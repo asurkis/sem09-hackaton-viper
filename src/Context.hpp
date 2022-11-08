@@ -19,6 +19,7 @@ class Context {
 
   Context() : palette(36) {}
 
+
   void quit() { quitting = true; }
   bool isQuitting() const { return quitting; }
 
@@ -36,6 +37,11 @@ class Context {
     sf::Image buf = image.copyToImage();
     buf.saveToFile(lastFilepath);
   }
+
+  void expand(int offset, const std::wstring& direction) {
+
+  }
+
 
   void moveCursor(int dx, int dy) {
     int cx = (int)cursor.x + dx;
@@ -69,7 +75,6 @@ class Context {
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
     wrapAround.setOutlineThickness(2.0f);
-
 
     window.draw(wrapAround);
   }

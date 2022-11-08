@@ -4,7 +4,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include "Context.hpp"
-#include "unordered_map"
+#include <unordered_map>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <locale>
+#include <codecvt>
+
 
 #ifndef VIPER_COMMANDPARSER_H
 #define VIPER_COMMANDPARSER_H
@@ -50,8 +56,29 @@ public:
         case SAVE_FILE:
           context.saveFile();
           break;
+        case LOAD_FILE:
+          context.loadFile(ws2s(commandArgs[0]));
+          break;
+        case EXPAND:
+          context.expand(stoi(commandArgs[0]), commandArgs[1]);
+          break;
       }
       return 0;
+    }
+
+    /** for debugging */
+    std::wstring s2ws(const std::string& str) {
+      using convert_typeX = std::codecvt_utf8<wchar_t>;
+      std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+      return converterX.from_bytes(str);
+    }
+
+    std::string ws2s(const std::wstring& wstr) {
+      using convert_typeX = std::codecvt_utf8<wchar_t>;
+      std::wstring_convert<convert_typeX, wchar_t> converterX;
+
+      return converterX.to_bytes(wstr);
     }
 
     int parseCommand(const std::wstring& commandString) {
@@ -78,7 +105,6 @@ public:
           ++spacePos;
         prevPos = spacePos;
       }
-
       return 0;
     }
 };
