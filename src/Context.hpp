@@ -21,6 +21,15 @@ class Context {
     image.setSmooth(false);
   }
 
+  void saveFile(std::string const& filepath = "") {
+    if (!filepath.empty()) {
+      lastFilepath = filepath;
+    }
+
+    sf::Image buf = image.copyToImage();
+    buf.saveToFile(lastFilepath);
+  }
+
   void moveCursor(int dx, int dy) {
     int cx = (int)cursor.x + dx;
     int cy = (int)cursor.y + dy;
