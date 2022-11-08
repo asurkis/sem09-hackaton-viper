@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 class Context {
   sf::Texture image;
@@ -11,9 +12,15 @@ class Context {
   sf::Vector2u select;
   std::string lastFilepath;
   unsigned int currentScale = 16;
+  bool quitting = false;
 
  public:
-  void quit() {}
+  std::vector<sf::Color> palette;
+
+  Context() : palette(36) {}
+
+  void quit() { quitting = true; }
+  bool isQuitting() const { return quitting; }
 
   void loadFile(std::string const& filepath) {
     lastFilepath = filepath;
@@ -45,7 +52,7 @@ class Context {
     auto ymax = std::max(cursor.y, select.y);
     auto xmin = std::min(cursor.x, select.x);
     auto ymin = std::min(cursor.y, select.y);
-    buf.create(xmax - xmin + 1, ymax - ymin + 1, sf::Color::Blue);
+    buf.create(xmax - xmin + 1, ymax - ymin + 1, palette[paletteId]);
     image.update(buf, xmin, ymin);
   }
 

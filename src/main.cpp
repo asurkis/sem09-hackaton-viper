@@ -12,11 +12,18 @@ int main(int argc, char** argv) {
     context.loadFile(argv[1]);
   }
 
+  context.palette[0] = sf::Color::Black;
+  context.palette[1] = sf::Color::White;
+  for (int i = 1; i <= 9; ++i) {
+    int v = 255 * (11 - i) / 10;
+    context.palette[i] = sf::Color(v, v, v);
+  }
+
   sf::Event evt;
-  while (window.isOpen() && window.waitEvent(evt)) {
+  while (!context.isQuitting() && window.waitEvent(evt)) {
     switch (evt.type) {
       case sf::Event::Closed:
-        window.close();
+        context.quit();
         break;
 
       case sf::Event::KeyPressed:
@@ -35,5 +42,7 @@ int main(int argc, char** argv) {
     context.redraw(window);
     window.display();
   }
+
+  window.close();
   return 0;
 }

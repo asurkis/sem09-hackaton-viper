@@ -92,12 +92,11 @@ class Handler {
         break;
 
       case MODE_PRE_EDIT_ONE:
-        // TODO: insert actual mode
         if (c == ESCAPE) {
         } else if ('0' <= c && c <= '9') {
           context.replaceColor(c - '0');
         } else if ('a' <= c && c <= 'z') {
-          context.replaceColor(c - 'a');
+          context.replaceColor(10 + c - 'a');
         }
         currentMode = prevMode;
         break;
@@ -129,15 +128,16 @@ class Handler {
         break;
 
       case MODE_COMMAND:
-        if (c == '\n') {
+        if (c == L'\r') {
           handleCommand(context);
           command.clear();
-          currentMode = MODE_NORMAL;
+          currentMode = prevMode;
         } else if (c == ESCAPE) {
           command.clear();
-          currentMode = MODE_NORMAL;
-        } else if (c == '\b') {
+          currentMode = prevMode;
+        } else if (c == L'\b') {
           if (!command.empty()) {
+            command.pop_back();
           }
         } else {
           command.push_back(c);
@@ -146,7 +146,13 @@ class Handler {
     }
   }
 
-  void handleCommand(Context& context) {}
+  void handleCommand(Context& context) {
+    if (command == L":q") {
+      context.quit();
+    } else if (command == L":w") {
+      context.saveFile();
+    }
+  }
 };
 
 #endif  // Handler_hpp_INCLUDED
