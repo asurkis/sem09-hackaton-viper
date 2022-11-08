@@ -6,12 +6,6 @@
 
 int main(int argc, char** argv) {
   sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
-  sf::Texture texture;
-  if (argc > 1) {
-    texture.loadFromFile(argv[1]);
-  } else {
-  }
-
   Handler handler;
   Context context;
   if (argc > 1) {
