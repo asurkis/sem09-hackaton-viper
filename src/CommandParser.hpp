@@ -62,6 +62,16 @@ public:
         case EXPAND:
           context.expand(stoi(commandArgs[0]), commandArgs[1]);
           break;
+        case NEW_FILE:
+          //default
+          uint32_t width=50,heigth=50;
+          //if given
+          if(commandArgs.size()>1) {
+            width  = std::stoi(commandArgs[1]);
+            heigth = std::stoi(commandArgs[2]);
+          }
+          context.newFile({width, heigth});
+          break;
       }
       return 0;
     }

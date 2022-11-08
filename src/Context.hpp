@@ -111,6 +111,14 @@ class Context : public sf::Drawable {
     target.draw(backgroundRect);
     target.draw(text);
   }
+
+  void newFile(std::pair<int32_t,int32_t> size){
+    sf::Image buf;
+    buf.create(size.first, size.second, sf::Color::Black);
+    image.loadFromImage(buf);
+
+    lastFilepath="";
+  }
 };
 
 #endif  // Context_hpp_INCLUDED
