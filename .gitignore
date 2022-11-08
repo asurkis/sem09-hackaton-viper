@@ -1,2 +1,5 @@
 build
 sample
+cmake-build-debug
+.idea
+./.gitignore

@@ -64,6 +64,7 @@ class Context {
     wrapAround.setOutlineThickness(2.0f);
     window.draw(wrapAround);
   }
+
 };
 
 #endif  // Context_hpp_INCLUDED
