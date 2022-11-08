@@ -2,3 +2,5 @@ build
 sample
 .idea
 cmake-build*
+.cache
+.vscode
