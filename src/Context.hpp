@@ -4,20 +4,33 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <iostream>
+#include <string_view>
 #include <vector>
 
-class Context {
+class Context : public sf::Drawable {
+  sf::Font mainFont;
   sf::Texture image;
   sf::Vector2u cursor;
   sf::Vector2u select;
   std::string lastFilepath;
   unsigned int currentScale = 16;
-  bool quitting = false;
+  bool quitting             = false;
+  unsigned int fontSize     = 16;
 
  public:
   std::vector<sf::Color> palette;
+  std::wstring_view statusLinePrefix;
+  std::wstring_view statusLine;
 
-  Context() : palette(36) {}
+  Context() : palette(36) {
+    std::cout << "Loading main font...";
+    if (mainFont.loadFromFile(
+            "Terminess (TTF) Bold Nerd Font Complete Mono.ttf")) {
+      std::cout << "Success!" << std::endl;
+    } else {
+      std::cout << "Failed!" << std::endl;
+    }
+  }
 
   void quit() { quitting = true; }
   bool isQuitting() const { return quitting; }
@@ -38,8 +51,8 @@ class Context {
   }
 
   void moveCursor(int dx, int dy) {
-    int cx = (int)cursor.x + dx;
-    int cy = (int)cursor.y + dy;
+    int cx   = (int)cursor.x + dx;
+    int cy   = (int)cursor.y + dy;
     cursor.x = std::max(0, std::min((int)image.getSize().x - 1, cx));
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
@@ -56,12 +69,12 @@ class Context {
     image.update(buf, xmin, ymin);
   }
 
-  void redraw(sf::RenderWindow& window) {
+  void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::Sprite sprite(image);
-    sf::Vector2u pos = (window.getSize() - currentScale * image.getSize()) / 2u;
+    sf::Vector2u pos = (target.getSize() - currentScale * image.getSize()) / 2u;
     sprite.setScale(currentScale, currentScale);
     sprite.setPosition((float)pos.x, (float)pos.y);
-    window.draw(sprite);
+    target.draw(sprite);
 
     sf::RectangleShape wrapAround;
     wrapAround.setPosition(sf::Vector2f(pos + currentScale * cursor));
@@ -69,9 +82,29 @@ class Context {
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
     wrapAround.setOutlineThickness(2.0f);
-    window.draw(wrapAround);
+    target.draw(wrapAround);
+
+    sf::Text text;
+    text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
+    text.setFont(mainFont);
+    text.setFillColor(sf::Color::Black);
+    text.setCharacterSize(fontSize);
+
+    sf::Vector2u mainSize = target.getSize();
+    auto localBounds      = text.getLocalBounds();
+    auto lineSpacing      = mainFont.getLineSpacing(fontSize);
+    lineSpacing = lineSpacing * 3 / 2;
+    mainSize.y -= lineSpacing;
+    text.setPosition(sf::Vector2f(0.0f, mainSize.y));
+
+    sf::RectangleShape backgroundRect;
+    backgroundRect.setPosition(sf::Vector2f(0.0f, mainSize.y));
+    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing));
+    backgroundRect.setFillColor(sf::Color(0xcccc00ff));
+
+    target.draw(backgroundRect);
+    target.draw(text);
   }
 };
 
 #endif  // Context_hpp_INCLUDED
-

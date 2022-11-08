@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ostream>
 #include <string>
+#include <string_view>
 
 sf::Uint32 constexpr ESCAPE = 27;
 
@@ -14,27 +15,35 @@ enum Mode {
   MODE_NORMAL = 0,
   MODE_VISUAL,
   MODE_PRE_EDIT_ONE,
-  MODE_EDIT_ONE,
   MODE_PRE_EDIT,
   MODE_EDIT,
   MODE_COMMAND,
 };
 
+inline std::wstring_view contextPrefix(Mode mode) {
+  switch (mode) {
+    case MODE_NORMAL: return L"";
+    case MODE_VISUAL: return L"Rectangle selection";
+    case MODE_PRE_EDIT_ONE: return L"r";
+    case MODE_PRE_EDIT: return L"c";
+    case MODE_EDIT: return L"EDIT";
+    case MODE_COMMAND: return L":";
+  }
+}
+
 class Handler {
   std::wstring command;
   Mode currentMode = MODE_NORMAL;
-  Mode prevMode = MODE_NORMAL;
+  Mode prevMode    = MODE_NORMAL;
 
  public:
-  void handleKey(Context& context, sf::Event::KeyEvent const& evt) {}
-
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
       case MODE_NORMAL:
       case MODE_VISUAL:
         switch (c) {
           case ESCAPE:
-            prevMode = MODE_NORMAL;
+            prevMode    = MODE_NORMAL;
             currentMode = MODE_NORMAL;
             break;
 
@@ -67,12 +76,12 @@ class Handler {
             break;
 
           case 'r':
-            prevMode = currentMode;
+            prevMode    = currentMode;
             currentMode = MODE_PRE_EDIT_ONE;
             break;
 
           case 'c':
-            prevMode = currentMode;
+            prevMode    = currentMode;
             currentMode = MODE_PRE_EDIT;
             break;
 
@@ -85,7 +94,7 @@ class Handler {
             break;
 
           case ':':
-            command = L":";
+            command     = L":";
             currentMode = MODE_COMMAND;
             break;
         }
@@ -101,24 +110,14 @@ class Handler {
         currentMode = prevMode;
         break;
 
-      case MODE_EDIT_ONE:
-        // TODO: insert actual mode
-        currentMode = MODE_NORMAL;
-        break;
-
       case MODE_PRE_EDIT:
         switch (c) {
-          case ESCAPE:
-            currentMode = MODE_NORMAL;
+          case ESCAPE: currentMode = MODE_NORMAL;
 
-          case 'h':
-            break;
-          case 'j':
-            break;
-          case 'k':
-            break;
-          case 'l':
-            break;
+          case 'h': break;
+          case 'j': break;
+          case 'k': break;
+          case 'l': break;
         }
         break;
 
@@ -143,6 +142,13 @@ class Handler {
           command.push_back(c);
         }
         break;
+    }
+
+    context.statusLinePrefix = contextPrefix(currentMode);
+    if (currentMode == MODE_COMMAND) {
+      context.statusLine = command;
+    } else {
+      context.statusLine = std::wstring_view();
     }
   }
 
