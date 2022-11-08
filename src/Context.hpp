@@ -23,13 +23,7 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   Context() : palette(36) {
-    std::cout << "Loading main font...";
-    if (mainFont.loadFromFile(
-            "Terminess (TTF) Bold Nerd Font Complete Mono.ttf")) {
-      std::cout << "Success!" << std::endl;
-    } else {
-      std::cout << "Failed!" << std::endl;
-    }
+    mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
   }
 
   void quit() { quitting = true; }
@@ -95,13 +89,12 @@ class Context : public sf::Drawable {
     sf::Vector2u mainSize = target.getSize();
     auto localBounds      = text.getLocalBounds();
     auto lineSpacing      = mainFont.getLineSpacing(fontSize);
-    lineSpacing           = lineSpacing * 3 / 2;
-    mainSize.y -= lineSpacing;
-    text.setPosition(sf::Vector2f(0.0f, mainSize.y));
+    mainSize.y -= lineSpacing * 3 / 2;
+    text.setPosition(sf::Vector2f(0.0f, mainSize.y + lineSpacing * 1 / 4));
 
     sf::RectangleShape backgroundRect;
     backgroundRect.setPosition(sf::Vector2f(0.0f, mainSize.y));
-    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing));
+    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
     backgroundRect.setFillColor(sf::Color(0xcccc00ff));
 
     target.draw(backgroundRect);
