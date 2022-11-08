@@ -1,9 +1,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Window.hpp>
-
 #include "Context.hpp"
 #include "Handler.hpp"
+
+/**  Put this file where your app was built,
+ *  it might be in your cmake-build directory
+ **/
+std::string defaultFile = "tile.png";
 
 int main(int argc, char** argv) {
   sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
@@ -12,13 +16,14 @@ int main(int argc, char** argv) {
   Context context;
   if (argc > 1) {
     context.loadFile(argv[1]);
+  } else {
+    context.loadFile(defaultFile);
   }
 
   // black-gray-white 1234567890
   context.palette[0] = sf::Color::Black;
-  context.palette[1] = sf::Color::White;
   for (int i = 1; i <= 9; ++i) {
-    int v = 255 * (11 - i) / 10;
+    int v              = 255 * (11 - i) / 10;
     context.palette[i] = sf::Color(v, v, v);
   }
 
@@ -66,28 +71,24 @@ int main(int argc, char** argv) {
   context.palette['l' - 'a' + 10] = sf::Color(153, 255, 204);
   context.palette['p' - 'a' + 10] = sf::Color(0, 153, 76);
 
+  window.clear(sf::Color::White);
+  window.draw(context);
+  window.display();
+
   sf::Event evt;
   while (!context.isQuitting() && window.waitEvent(evt)) {
     switch (evt.type) {
-      case sf::Event::Closed:
-        context.quit();
-        break;
-
-      case sf::Event::KeyPressed:
-        handler.handleKey(context, evt.key);
-        break;
+      case sf::Event::Closed: context.quit(); break;
 
       case sf::Event::TextEntered:
         handler.handleCharacter(context, evt.text.unicode);
+        window.clear(sf::Color::White);
+        window.draw(context);
+        window.display();
         break;
 
-      default:
-        break;
+      default: break;
     }
-
-    window.clear(sf::Color::White);
-    context.redraw(window);
-    window.display();
   }
 
   window.close();

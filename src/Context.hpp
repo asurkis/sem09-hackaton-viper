@@ -7,21 +7,26 @@
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <iostream>
+#include <string_view>
 #include <vector>
 
-class Context {
+class Context : public sf::Drawable {
+  sf::Font mainFont;
   sf::Texture image;
   sf::Vector2u cursor;
   sf::Vector2u select;
   std::string lastFilepath;
   unsigned int currentScale = 16;
-  bool quitting = false;
   unsigned int paletteSize = 22;
   sf::Vector2f paletteCoordinates[36];
   bool drawPalette = true;
+  unsigned int fontSize     = 16;
+  bool quitting             = false;
 
  public:
   std::vector<sf::Color> palette;
+  std::wstring_view statusLinePrefix;
+  std::wstring_view statusLine;
 
   Context() : palette(36) {
     paletteCoordinates[0] = sf::Vector2f(0, 10);
@@ -73,6 +78,8 @@ class Context {
     paletteCoordinates['o' - 'a' + 10] = sf::Vector2f(1, 8);
     paletteCoordinates['l' - 'a' + 10] = sf::Vector2f(2, 8);
     paletteCoordinates['p' - 'a' + 10] = sf::Vector2f(1, 9);
+
+    mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
   }
 
   void quit() { quitting = true; }
@@ -93,9 +100,11 @@ class Context {
     buf.saveToFile(lastFilepath);
   }
 
+  void expand(int offset, const std::wstring& direction) {}
+
   void moveCursor(int dx, int dy) {
-    int cx = (int)cursor.x + dx;
-    int cy = (int)cursor.y + dy;
+    int cx   = (int)cursor.x + dx;
+    int cy   = (int)cursor.y + dy;
     cursor.x = std::max(0, std::min((int)image.getSize().x - 1, cx));
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
@@ -112,14 +121,14 @@ class Context {
     image.update(buf, xmin, ymin);
   }
 
-  void redraw(sf::RenderWindow& window) {
+  void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::Sprite sprite(image);
 
     sf::View imageView(sf::FloatRect(0.f, 0.f, image.getSize().x, image.getSize().y));
 //    imageView.setCenter(cursor.x, cursor.y);
     imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 0.8f));
-    window.setView(imageView);
-    window.draw(sprite);
+    target.setView(imageView);
+    target.draw(sprite);
 
     sf::RectangleShape wrapAround;
     wrapAround.setPosition(sf::Vector2f(cursor));
@@ -127,14 +136,14 @@ class Context {
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
     wrapAround.setOutlineThickness(0.1f);
-    window.draw(wrapAround);
+    target.draw(wrapAround);
     wrapAround.setOutlineColor(sf::Color::Red);
     wrapAround.setOutlineThickness(-0.1f);
-    window.draw(wrapAround);
+    target.draw(wrapAround);
 
-    sf::View paletteView(sf::FloatRect(0.f, 0.f, window.getSize().x, window.getSize().y));
+    sf::View paletteView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
     paletteView.setViewport(sf::FloatRect(0.f, 0.8f, 1.f, 1.f));
-    window.setView(paletteView);
+    target.setView(paletteView);
 
     if (drawPalette) {
       for (int i = 0; i < palette.size(); ++i) {
@@ -144,11 +153,32 @@ class Context {
                          paletteCoordinates[i].x * paletteSize));
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
-        window.draw(paletteRectangle);
+        target.draw(paletteRectangle);
       }
     }
+
+    target.setView(target.getDefaultView());
+    
+    sf::Text text;
+    text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
+    text.setFont(mainFont);
+    text.setFillColor(sf::Color::Black);
+    text.setCharacterSize(fontSize);
+
+    sf::Vector2u mainSize = target.getSize();
+    auto localBounds      = text.getLocalBounds();
+    auto lineSpacing      = mainFont.getLineSpacing(fontSize);
+    mainSize.y -= lineSpacing * 3 / 2;
+    text.setPosition(sf::Vector2f(0.0f, mainSize.y + lineSpacing * 1 / 4));
+
+    sf::RectangleShape backgroundRect;
+    backgroundRect.setPosition(sf::Vector2f(0.0f, mainSize.y));
+    backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
+    backgroundRect.setFillColor(sf::Color(0xcccc00ff));
+
+    target.draw(backgroundRect);
+    target.draw(text);
   }
 };
 
 #endif  // Context_hpp_INCLUDED
-
