@@ -92,12 +92,11 @@ class Handler {
         break;
 
       case MODE_PRE_EDIT_ONE:
-        // TODO: insert actual mode
         if (c == ESCAPE) {
         } else if ('0' <= c && c <= '9') {
           context.replaceColor(c - '0');
         } else if ('a' <= c && c <= 'z') {
-          context.replaceColor(c - 'a');
+          context.replaceColor(10 + c - 'a');
         }
         currentMode = prevMode;
         break;
