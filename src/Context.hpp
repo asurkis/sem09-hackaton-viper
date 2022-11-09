@@ -2,9 +2,11 @@
 #define Context_hpp_INCLUDED
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/View.hpp>
+#include <SFML/System/Utf.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <iostream>
@@ -147,6 +149,12 @@ class Context : public sf::Drawable {
     image.update(buf, xmin, ymin);
   }
 
+  void pickUpColor(sf::Uint32 c) {
+    sf::Color currentColor = image.copyToImage().getPixel(cursor.x, cursor.y);
+    currentColor.a = 255;
+    palette[c] = currentColor;
+  }
+
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::View currentView(
         sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
@@ -191,7 +199,6 @@ class Context : public sf::Drawable {
       }
     }
 
-    float imageMaxSize = std::max(image.getSize().x, image.getSize().y);
     sf::View imageView;
     sf::Vector2f viewSize(image.getSize().x, 0.f);
     viewSize.y = viewSize.x * mainSize.y / mainSize.x;
