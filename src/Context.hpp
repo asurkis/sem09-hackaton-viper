@@ -29,10 +29,10 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   Context() : palette(36) {
-    paletteCoordinates[0] = sf::Vector2f(0, 10);
+    paletteCoordinates[0] = sf::Vector2f(0, 9);
 
-    for (int i = 0; i <= 9; ++i) {
-      paletteCoordinates[i] = sf::Vector2f(0, i);
+    for (int i = 1; i <= 9; ++i) {
+      paletteCoordinates[i] = sf::Vector2f(0, i - 1);
     }
     
     // red qaz
@@ -150,9 +150,11 @@ class Context : public sf::Drawable {
     if (drawPalette) {
       for (int i = 0; i < palette.size(); ++i) {
         sf::RectangleShape paletteRectangle;
-        paletteRectangle.setPosition(
-            sf::Vector2f(paletteCoordinates[i].y * paletteSize,
-                         mainSize.y + paletteCoordinates[i].x * paletteSize));
+        sf::Vector2f palettePos;
+        palettePos.x = paletteCoordinates[i].y * paletteSize +
+                       paletteCoordinates[i].x * paletteSize / 2;
+        palettePos.y = mainSize.y + paletteCoordinates[i].x * paletteSize;
+        paletteRectangle.setPosition(palettePos);
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
         target.draw(paletteRectangle);
