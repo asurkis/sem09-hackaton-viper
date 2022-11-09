@@ -305,9 +305,9 @@ class Context : public sf::Drawable {
     int x = image.getSize().x;
     int y = image.getSize().y;
 
-    if (direction == L"bottom" ||
-        direction == L"bot" ||
-        direction == L"top"
+
+    if (direction == L"up" ||
+        direction == L"down"
         ) {
       y += offset;
     } else {
@@ -326,11 +326,10 @@ class Context : public sf::Drawable {
     if (0 <= offset) {
       if (direction == L"left") {
         expandedImage.copy(te, offset, 0);
-      } else if (direction == L"top") {
+      } else if (direction == L"up") {
         expandedImage.copy(te, 0, offset);
       } else if (direction == L"right" ||
-                 direction == L"bot"   ||
-                 direction == L"bottom") {
+                 direction == L"down") {
         expandedImage.copy(te, 0, 0);
       } else {
         std::cout << "Wrong Direction" << std::endl;
@@ -340,12 +339,11 @@ class Context : public sf::Drawable {
       if (direction == L"left") {
         sf::IntRect cutRect(-offset, 0, x, y - offset);
         expandedImage.copy(te, 0, 0, cutRect);
-      } else if (direction == L"top") {
+      } else if (direction == L"up") {
         sf::IntRect cutRect(0, -offset, x - offset, y);
         expandedImage.copy(te, 0, 0, cutRect);
       } else if (direction == L"right" ||
-                 direction == L"bot"   ||
-                 direction == L"bottom") {
+                 direction == L"down") {
         sf::IntRect cutRect(0, 0, x, y);
         expandedImage.copy(te, 0, 0, cutRect);
       } else {
@@ -353,7 +351,10 @@ class Context : public sf::Drawable {
         return;
       }
     }
+
     image.loadFromImage(expandedImage);
+    cursor.x = std::min((int)cursor.x, x - 1);
+    cursor.y = std::min((int)cursor.y, y - 1);
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
