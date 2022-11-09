@@ -404,17 +404,16 @@ class Context : public sf::Drawable {
     }
 
     // Cursor
-    target.setView(imageView);
-
     sf::RectangleShape wrapAround;
-    wrapAround.setPosition(sf::Vector2f(cursor));
-    wrapAround.setSize(sf::Vector2f(1, 1));
+    wrapAround.setPosition(imageTopLeftPos +
+                           sf::Vector2f(pixelSize * cursor.x, pixelSize * cursor.y));
+    wrapAround.setSize(sf::Vector2f(pixelSize, pixelSize));
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
-    wrapAround.setOutlineThickness(0.1f);
+    wrapAround.setOutlineThickness(2.0f);
     target.draw(wrapAround);
     wrapAround.setOutlineColor(sf::Color::Red);
-    wrapAround.setOutlineThickness(-0.1f);
+    wrapAround.setOutlineThickness(-2.0f);
     target.draw(wrapAround);
   }
 };
