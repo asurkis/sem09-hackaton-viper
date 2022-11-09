@@ -11,76 +11,80 @@
 #include <string_view>
 #include <vector>
 
+inline bool isPaletteKey(sf::Uint32 c) {
+  return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z');
+}
+
 class Context : public sf::Drawable {
   sf::Font mainFont;
   sf::Texture image;
   sf::Vector2u cursor;
   sf::Vector2u select;
   std::string lastFilepath;
-  unsigned int currentScale = 16;
+  std::vector<sf::Vector2f> paletteCoordinates;
   unsigned int paletteSize = 22;
-  sf::Vector2f paletteCoordinates[36];
-  bool drawPalette = true;
-  unsigned int fontSize     = 16;
-  bool quitting             = false;
+  unsigned int fontSize    = 16;
+  bool drawPalette         = true;
+  bool quitting            = false;
 
  public:
   std::vector<sf::Color> palette;
   std::wstring_view statusLinePrefix;
   std::wstring_view statusLine;
 
-  Context() : palette(36) {
+  Context() : palette(128), paletteCoordinates(128) {
     paletteCoordinates[0] = sf::Vector2f(0, 9);
 
     for (int i = 1; i <= 9; ++i) {
-      paletteCoordinates[i] = sf::Vector2f(0, i - 1);
+      paletteCoordinates['0' + i] = sf::Vector2f(0, i - 1);
     }
-    
+
     // red qaz
-    paletteCoordinates['q' - 'a' + 10] = sf::Vector2f(1, 0);
-    paletteCoordinates['a' - 'a' + 10] = sf::Vector2f(2, 0);
-    paletteCoordinates['z' - 'a' + 10] = sf::Vector2f(3, 0);
+    paletteCoordinates['q'] = sf::Vector2f(1, 0);
+    paletteCoordinates['a'] = sf::Vector2f(2, 0);
+    paletteCoordinates['z'] = sf::Vector2f(3, 0);
 
     // orange wsx
-    paletteCoordinates['w' - 'a' + 10] = sf::Vector2f(1, 1);
-    paletteCoordinates['s' - 'a' + 10] = sf::Vector2f(2, 1);
-    paletteCoordinates['x' - 'a' + 10] = sf::Vector2f(3, 1);
+    paletteCoordinates['w'] = sf::Vector2f(1, 1);
+    paletteCoordinates['s'] = sf::Vector2f(2, 1);
+    paletteCoordinates['x'] = sf::Vector2f(3, 1);
 
     // green edc
-    paletteCoordinates['e' - 'a' + 10] = sf::Vector2f(1, 2);
-    paletteCoordinates['d' - 'a' + 10] = sf::Vector2f(2, 2);
-    paletteCoordinates['c' - 'a' + 10] = sf::Vector2f(3, 2);
+    paletteCoordinates['e'] = sf::Vector2f(1, 2);
+    paletteCoordinates['d'] = sf::Vector2f(2, 2);
+    paletteCoordinates['c'] = sf::Vector2f(3, 2);
 
     // blue rfv
-    paletteCoordinates['r' - 'a' + 10] = sf::Vector2f(1, 3);
-    paletteCoordinates['f' - 'a' + 10] = sf::Vector2f(2, 3);
-    paletteCoordinates['v' - 'a' + 10] = sf::Vector2f(3, 3);
+    paletteCoordinates['r'] = sf::Vector2f(1, 3);
+    paletteCoordinates['f'] = sf::Vector2f(2, 3);
+    paletteCoordinates['v'] = sf::Vector2f(3, 3);
 
     // purple tgb
-    paletteCoordinates['t' - 'a' + 10] = sf::Vector2f(1, 4);
-    paletteCoordinates['g' - 'a' + 10] = sf::Vector2f(2, 4);
-    paletteCoordinates['b' - 'a' + 10] = sf::Vector2f(3, 4);
+    paletteCoordinates['t'] = sf::Vector2f(1, 4);
+    paletteCoordinates['g'] = sf::Vector2f(2, 4);
+    paletteCoordinates['b'] = sf::Vector2f(3, 4);
 
     // pink yhn
-    paletteCoordinates['y' - 'a' + 10] = sf::Vector2f(1, 5);
-    paletteCoordinates['h' - 'a' + 10] = sf::Vector2f(2, 5);
-    paletteCoordinates['n' - 'a' + 10] = sf::Vector2f(3, 5);
+    paletteCoordinates['y'] = sf::Vector2f(1, 5);
+    paletteCoordinates['h'] = sf::Vector2f(2, 5);
+    paletteCoordinates['n'] = sf::Vector2f(3, 5);
 
     // ligth blue ujm
-    paletteCoordinates['u' - 'a' + 10] = sf::Vector2f(1, 6);
-    paletteCoordinates['j' - 'a' + 10] = sf::Vector2f(2, 6);
-    paletteCoordinates['m' - 'a' + 10] = sf::Vector2f(3, 6);
+    paletteCoordinates['u'] = sf::Vector2f(1, 6);
+    paletteCoordinates['j'] = sf::Vector2f(2, 6);
+    paletteCoordinates['m'] = sf::Vector2f(3, 6);
 
     // red pink ik
-    paletteCoordinates['i' - 'a' + 10] = sf::Vector2f(1, 7);
-    paletteCoordinates['k' - 'a' + 10] = sf::Vector2f(2, 7);
+    paletteCoordinates['i'] = sf::Vector2f(1, 7);
+    paletteCoordinates['k'] = sf::Vector2f(2, 7);
 
     // green blue olp
-    paletteCoordinates['o' - 'a' + 10] = sf::Vector2f(1, 8);
-    paletteCoordinates['l' - 'a' + 10] = sf::Vector2f(2, 8);
-    paletteCoordinates['p' - 'a' + 10] = sf::Vector2f(1, 9);
+    paletteCoordinates['o'] = sf::Vector2f(1, 8);
+    paletteCoordinates['l'] = sf::Vector2f(2, 8);
+    paletteCoordinates['p'] = sf::Vector2f(1, 9);
 
     mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
+    image.setSmooth(false);
   }
 
   void quit() { quitting = true; }
@@ -89,7 +93,13 @@ class Context : public sf::Drawable {
   void loadFile(std::string const& filepath) {
     lastFilepath = filepath;
     image.loadFromFile(filepath);
-    image.setSmooth(false);
+  }
+
+  void newFile(int width, int height) {
+    sf::Image buf;
+    buf.create(width, height, sf::Color(0));
+    image.loadFromImage(buf);
+    lastFilepath.clear();
   }
 
   void saveFile(std::string const& filepath = "") {
@@ -97,8 +107,10 @@ class Context : public sf::Drawable {
       lastFilepath = filepath;
     }
 
-    sf::Image buf = image.copyToImage();
-    buf.saveToFile(lastFilepath);
+    if (!lastFilepath.empty()) {
+      sf::Image buf = image.copyToImage();
+      buf.saveToFile(lastFilepath);
+    }
   }
 
   void expand(int offset, const std::wstring& direction) {}
@@ -110,7 +122,9 @@ class Context : public sf::Drawable {
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
 
-  void dropSelection() { select = cursor; }
+  void dropSelection() {
+    select = cursor;
+  }
 
   void replaceColor(int paletteId) {
     sf::Image buf;
@@ -123,7 +137,8 @@ class Context : public sf::Drawable {
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-    sf::View currentView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
+    sf::View currentView(
+        sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
     target.setView(currentView);
 
     sf::Text text;
@@ -146,10 +161,12 @@ class Context : public sf::Drawable {
     target.draw(backgroundRect);
     target.draw(text);
 
-
     if (drawPalette) {
       mainSize.y -= 4 * paletteSize;
       for (int i = 0; i < palette.size(); ++i) {
+        if (!isPaletteKey(i)) {
+          continue;
+        }
         sf::RectangleShape paletteRectangle;
         sf::Vector2f palettePos;
         palettePos.x = paletteCoordinates[i].y * paletteSize +
@@ -161,21 +178,52 @@ class Context : public sf::Drawable {
         target.draw(paletteRectangle);
       }
     }
-    
-    sf::Sprite sprite(image);
+
     float imageMaxSize = std::max(image.getSize().x, image.getSize().y);
     sf::View imageView;
     sf::Vector2f viewSize(image.getSize().x, 0.f);
-    viewSize.y =  viewSize.x * mainSize.y / mainSize.x;
+    viewSize.y = viewSize.x * mainSize.y / mainSize.x;
     if (viewSize.y < image.getSize().y) {
       float tmp = image.getSize().y / viewSize.y;
       viewSize.y *= tmp;
       viewSize.x *= tmp;
     }
     imageView.setSize(viewSize);
-    imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) / 2.0f);
-    imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y/target.getSize().y));
+    imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) /
+                        2.0f);
+    imageView.setViewport(
+        sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
     target.setView(imageView);
+
+    backgroundRect.setPosition(0.0f, 0.0f);
+    backgroundRect.setSize(sf::Vector2f(image.getSize().x, image.getSize().y));
+    backgroundRect.setFillColor(sf::Color::Magenta);
+    target.draw(backgroundRect);
+
+    sf::Sprite sprite(image);
+    target.draw(sprite);
+
+    auto xmax = std::max(cursor.x, select.x);
+    auto ymax = std::max(cursor.y, select.y);
+    auto xmin = std::min(cursor.x, select.x);
+    auto ymin = std::min(cursor.y, select.y);
+
+    backgroundRect.setPosition(xmin, ymin);
+    backgroundRect.setSize(sf::Vector2f(xmax - xmin + 1, ymax - ymin + 1));
+    target.draw(backgroundRect);
+
+    sprite.setPosition(xmin, ymin);
+    sprite.setTextureRect(sf::IntRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1));
+    sprite.setColor(sf::Color(0xccccffff));
+    target.draw(sprite);
+
+    backgroundRect.setPosition(cursor.x, cursor.y);
+    backgroundRect.setSize(sf::Vector2f(1, 1));
+    target.draw(backgroundRect);
+
+    sprite.setPosition(cursor.x, cursor.y);
+    sprite.setTextureRect(sf::IntRect(cursor.x, cursor.y, 1, 1));
+    sprite.setColor(sf::Color::White);
     target.draw(sprite);
 
     sf::RectangleShape wrapAround;
@@ -188,14 +236,6 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineColor(sf::Color::Red);
     wrapAround.setOutlineThickness(-0.1f);
     target.draw(wrapAround);
-  }
-
-  void newFile(std::pair<int32_t,int32_t> size){
-    sf::Image buf;
-    buf.create(size.first, size.second, sf::Color::Black);
-    image.loadFromImage(buf);
-
-    lastFilepath="";
   }
 };
 
