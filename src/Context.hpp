@@ -210,6 +210,11 @@ class Context : public sf::Drawable {
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
 
+  void swapCursor() {
+    std::swap(cursor, select);
+    updateSelection();
+  }
+
   void setSelectionType(SelectionType st) {
     selectionType = st;
     updateSelection();

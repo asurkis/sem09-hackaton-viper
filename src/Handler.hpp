@@ -81,6 +81,18 @@ class Handler {
             currentMode = MODE_PRE_EDIT;
             break;
 
+          case 's':
+            prevMode = currentMode;
+            if (currentMode == MODE_SELECTION) {
+              currentMode = MODE_NORMAL;
+              context.dropSelection();
+            } else {
+              currentMode = MODE_SELECTION;
+            }
+            break;
+
+          case 'a': context.swapCursor(); break;
+
           case 'R':
             currentMode = MODE_SELECTION;
             context.setSelectionType(ST_RECTANGLE);
