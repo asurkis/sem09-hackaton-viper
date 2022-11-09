@@ -52,6 +52,7 @@ class Handler {
             break;
 
           case 'h':
+
             if(!command.empty())
               context.moveCursor(-std::stoi(command), 0);
             else
@@ -59,6 +60,8 @@ class Handler {
 
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             command.clear();
             break;
@@ -67,8 +70,11 @@ class Handler {
               context.moveCursor(0,std::stoi(command));
             else
               context.moveCursor(0, 1);
+
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             command.clear();
             break;
@@ -81,6 +87,8 @@ class Handler {
 
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             command.clear();
             break;
@@ -90,8 +98,11 @@ class Handler {
               context.moveCursor(std::stoi(command), 0);
             else
               context.moveCursor(1, 0);
+
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             command.clear();
             break;
@@ -122,25 +133,16 @@ class Handler {
             currentMode = MODE_COMMAND;
             break;
           case 'p':
-            prevMode = currentMode;
+            prevMode    = currentMode;
             currentMode = MODE_PICK_UP;
             break;
-          case 'f':
-            context.replacePrevColor();
-            break;
 
-          case '1':
-          case '2':
-          case '3':
-          case '4':
-          case '5':
-          case '6':
-          case '7':
-          case '8':
-          case '9':
-          case '0':
+          case '1': case '2': case '3': case '4': case '5':
+          case '6': case '7': case '8': case '9': case '0':
             command.push_back(c);
             break;
+
+          case 'f': context.replacePrevColor(); break;
         }
         break;
 
