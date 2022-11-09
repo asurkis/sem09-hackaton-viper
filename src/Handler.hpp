@@ -77,6 +77,8 @@ class Handler {
             }
             break;
 
+          case 'd': context.deleteColor(); break;
+
           case 'r':
             prevMode    = currentMode;
             currentMode = MODE_PRE_EDIT_ONE;
@@ -92,6 +94,7 @@ class Handler {
               currentMode = MODE_VISUAL;
             } else {
               currentMode = MODE_NORMAL;
+              context.dropSelection();
             }
             break;
 
@@ -105,10 +108,8 @@ class Handler {
 
       case MODE_PRE_EDIT_ONE:
         if (c == ESCAPE) {
-        } else if ('0' <= c && c <= '9') {
-          context.replaceColor(c - '0');
-        } else if ('a' <= c && c <= 'z') {
-          context.replaceColor(10 + c - 'a');
+        } else if (isPaletteKey(c)) {
+          context.replaceColor(c);
         }
         currentMode = prevMode;
         break;
