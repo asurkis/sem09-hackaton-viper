@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <queue>
 #include <string_view>
 #include <vector>
 
@@ -45,34 +46,34 @@ enum SelectionType {
 
 class Context : public sf::Drawable {
   std::vector<sf::Vector2f> paletteCoordinates;
-  std::vector<sf::Vector2u> selectedPixels;
+  std::vector<std::pair<std::size_t, std::size_t>> selectedPixels;
   std::string lastFilepath;
   sf::Texture image;
   sf::Font mainFont;
   sf::Vector2u cursor;
   sf::Vector2u select;
   sf::Uint32 prev_c;
-  unsigned int paletteSize = 22;
-  unsigned int gridSize    = 4;
-  unsigned int fontSize    = 16;
-  bool drawPalette         = true;
-  bool quitting            = false;
+  unsigned int paletteSize    = 22;
+  unsigned int gridSize       = 4;
+  unsigned int fontSize       = 16;
+  bool drawPalette            = true;
+  bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
 
   void updateSelectionRectangle() {
-    int x1 = select.x;
-    int x2 = cursor.x;
+    int x1 = cursor.x;
+    int x2 = select.x;
     int dx = x2 < x1 ? -1 : 1;
     x2 += dx;
 
-    int y1 = select.y;
-    int y2 = cursor.y;
+    int y1 = cursor.y;
+    int y2 = select.y;
     int dy = y2 < y1 ? -1 : 1;
     y2 += dy;
 
     for (int y = y1; y != y2; y += dy) {
       for (int x = x1; x != x2; x += dx) {
-        selectedPixels.push_back(sf::Vector2u(x, y));
+        selectedPixels.push_back({x, y});
       }
     }
   }
@@ -82,12 +83,12 @@ class Context : public sf::Drawable {
     // (x2 - x1) * kx = -(y2 - y1) * ky
     // kx = y1 - y2
     // ky = x2 - x1
-    long long x1 = select.x;
-    long long x2 = cursor.x;
+    long long x1 = cursor.x;
+    long long x2 = select.x;
     long long dx = x2 < x1 ? -1 : 1;
 
-    long long y1 = select.y;
-    long long y2 = cursor.y;
+    long long y1 = cursor.y;
+    long long y2 = select.y;
     long long dy = y2 < y1 ? -1 : 1;
 
     long long kx = y1 - y2;
@@ -96,7 +97,7 @@ class Context : public sf::Drawable {
     long long x = x1;
     long long y = y1;
     while (x != x2 || y != y2) {
-      selectedPixels.push_back(sf::Vector2u(x, y));
+      selectedPixels.push_back({x, y});
       long long xns[] = {x, x + dx, x + dx};
       long long yns[] = {y + dy, y + dy, y};
       long long bestD = 0x7fffffff;
@@ -113,7 +114,7 @@ class Context : public sf::Drawable {
       x = bestX;
       y = bestY;
     }
-    selectedPixels.push_back(sf::Vector2u(x2, y2));
+    selectedPixels.push_back({x2, y2});
   }
 
  public:
@@ -237,6 +238,36 @@ class Context : public sf::Drawable {
     }
   }
 
+  void selectSameColor() {
+    selectedPixels.clear();
+    auto img = image.copyToImage();
+    int w    = img.getSize().x;
+    int h    = img.getSize().y;
+    std::vector<bool> visited(w * h);
+    std::queue<std::pair<int, int>> queue;
+    queue.push({cursor.x, cursor.y});
+    while (!queue.empty()) {
+      auto [x, y] = queue.front();
+      queue.pop();
+      if (visited[x + w * y]) {
+        continue;
+      }
+      selectedPixels.push_back({x, y});
+      visited[x + w * y] = true;
+      for (int dx = -1; dx <= 1; ++dx) {
+        for (int dy = -1; dy <= 1; ++dy) {
+          int nx = x + dx;
+          int ny = y + dy;
+          if (0 <= nx && nx < w && 0 <= ny && ny < h &&
+              (img.getPixel(nx, ny).toInteger() | 0xff) ==
+                  (img.getPixel(cursor.x, cursor.y).toInteger() | 0xff)) {
+            queue.push({nx, ny});
+          }
+        }
+      }
+    }
+  }
+
   void dropSelection() {
     select = cursor;
     updateSelection();
@@ -311,7 +342,8 @@ class Context : public sf::Drawable {
         sf::Vector2f palettePos;
         palettePos.x = paletteCoordinates[i].y * paletteSize + paletteShift +
                        paletteCoordinates[i].x * paletteSize / 2;
-        palettePos.y = mainSize.y + minorShift + paletteCoordinates[i].x * paletteSize;
+        palettePos.y =
+            mainSize.y + minorShift + paletteCoordinates[i].x * paletteSize;
         paletteRectangle.setPosition(palettePos);
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
@@ -335,13 +367,13 @@ class Context : public sf::Drawable {
     // Image
     sf::View imageView;
     sf::Vector2f viewSize(image.getSize().x, 0.f);
-    viewSize.y = viewSize.x * mainSize.y / mainSize.x;
-    float pixelSize = 1.0f*mainSize.x / image.getSize().x;
+    viewSize.y      = viewSize.x * mainSize.y / mainSize.x;
+    float pixelSize = 1.0f * mainSize.x / image.getSize().x;
     if (viewSize.y < image.getSize().y) {
       float tmp = image.getSize().y / viewSize.y;
       viewSize.y *= tmp;
       viewSize.x *= tmp;
-      pixelSize = 1.0f*mainSize.y / image.getSize().y;
+      pixelSize = 1.0f * mainSize.y / image.getSize().y;
     }
     imageView.setSize(viewSize);
     imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) /
@@ -360,7 +392,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setSize(sf::Vector2f(1, 1));
     backgroundRect.setFillColor(sf::Color(0xcc00ffff));
-    for (size_t i = 0; i + 1 < selectedPixels.size(); ++i) {
+    for (size_t i = 1; i < selectedPixels.size(); ++i) {
       auto const& [x, y] = selectedPixels[i];
       backgroundRect.setPosition(x, y);
       target.draw(backgroundRect);
@@ -373,11 +405,12 @@ class Context : public sf::Drawable {
     // Grid
     target.setView(currentView);
 
-    sf::Vector2f imageTopLeftPos((mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
-                                 (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
+    sf::Vector2f imageTopLeftPos(
+        (mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
+        (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
     sf::RectangleShape imageFrame;
     imageFrame.setPosition(imageTopLeftPos);
-    imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2, 
+    imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2,
                                     pixelSize * image.getSize().y + 2));
     imageFrame.setFillColor(sf::Color::Transparent);
     imageFrame.setOutlineThickness(-2.0f);
@@ -391,7 +424,7 @@ class Context : public sf::Drawable {
       horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
       horizontalLine.setFillColor(sf::Color::Black);
       target.draw(horizontalLine);
-      currentLinePos.y += pixelSize * gridSize; 
+      currentLinePos.y += pixelSize * gridSize;
     }
 
     currentLinePos = imageTopLeftPos;
@@ -401,13 +434,14 @@ class Context : public sf::Drawable {
       verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
       verticalLine.setFillColor(sf::Color::Black);
       target.draw(verticalLine);
-      currentLinePos.x += pixelSize * gridSize; 
+      currentLinePos.x += pixelSize * gridSize;
     }
 
     // Cursor
     sf::RectangleShape wrapAround;
-    wrapAround.setPosition(imageTopLeftPos +
-                           sf::Vector2f(pixelSize * cursor.x, pixelSize * cursor.y));
+    wrapAround.setPosition(
+        imageTopLeftPos +
+        sf::Vector2f(pixelSize * cursor.x, pixelSize * cursor.y));
     wrapAround.setSize(sf::Vector2f(pixelSize, pixelSize));
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
