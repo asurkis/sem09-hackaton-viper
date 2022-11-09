@@ -181,6 +181,10 @@ class Context : public sf::Drawable {
   void loadFile(std::string const& filepath) {
     lastFilepath = filepath;
     image.loadFromFile(filepath);
+
+    cursor = sf::Vector2u();
+    select = sf::Vector2u();
+    updateSelection();
   }
 
   void newFile(int width, int height) {
@@ -188,6 +192,10 @@ class Context : public sf::Drawable {
     buf.create(width, height, sf::Color(0));
     image.loadFromImage(buf);
     lastFilepath.clear();
+
+    cursor = sf::Vector2u();
+    select = sf::Vector2u();
+    updateSelection();
   }
 
   void saveFile(std::string const& filepath = "") {
@@ -352,7 +360,6 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineThickness(-0.1f);
     target.draw(wrapAround);
   }
-
 };
 
 #endif  // Context_hpp_INCLUDED

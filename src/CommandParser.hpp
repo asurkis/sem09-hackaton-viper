@@ -42,13 +42,13 @@ class CommandParser {
     switch (cur_command) {
       case QUIT: context.quit(); break;
       case SAVE_FILE:
-        if(commandArgs.size()==1)
+        if (commandArgs.size() == 1)
           context.saveFile(ws2s(commandArgs[0]));
         else
           context.saveFile();
         break;
       case LOAD_FILE:
-        if(commandArgs.size()==1)
+        if (commandArgs.size() == 1)
           context.loadFile(ws2s(commandArgs[0]));
         break;
       case EXPAND: context.expand(stoi(commandArgs[0]), commandArgs[1]); break;

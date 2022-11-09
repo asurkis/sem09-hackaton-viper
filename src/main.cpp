@@ -4,11 +4,6 @@
 #include "Context.hpp"
 #include "Handler.hpp"
 
-/**  Put this file where your app was built,
- *  it might be in your cmake-build directory
- **/
-std::string defaultFile = "tile.png";
-
 int main(int argc, char** argv) {
   sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
 
@@ -16,8 +11,6 @@ int main(int argc, char** argv) {
   Context context;
   if (argc > 1) {
     context.loadFile(argv[1]);
-  } else {
-    context.loadFile(defaultFile);
   }
 
   // black-gray-white 1234567890
