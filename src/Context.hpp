@@ -352,6 +352,7 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineThickness(-0.1f);
     target.draw(wrapAround);
   }
+
 };
 
 #endif  // Context_hpp_INCLUDED
