@@ -9,13 +9,38 @@
 #include <SFML/System/Utf.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <string_view>
 #include <vector>
-#include <cmath>
 
 inline bool isPaletteKey(sf::Uint32 c) {
   return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z');
+}
+
+inline sf::Color hsv(float h, float s, float v) {
+  h     = h / 60.0f;
+  int i = (int)h;
+  if (i < 0) {
+    --i;
+  }
+  float frac = h - i;
+
+  i = (i % 6 + 6) % 6;
+
+  sf::Vector3f fullSat;
+  switch (i) {
+    case 0: fullSat = sf::Vector3f(1.0f, frac, 0.0f); break;
+    case 1: fullSat = sf::Vector3f(1.0f - frac, 1.0f, 0.0f); break;
+    case 2: fullSat = sf::Vector3f(0.0f, 1.0f, frac); break;
+    case 3: fullSat = sf::Vector3f(0.0f, 1.0f - frac, 1.0f); break;
+    case 4: fullSat = sf::Vector3f(frac, 0.0f, 1.0f); break;
+    case 5: fullSat = sf::Vector3f(1.0f, 0.0f, 1.0f - frac); break;
+  }
+
+  sf::Vector3f rgb =
+      v * s * fullSat + v * (1.0f - s) * sf::Vector3f(1.0f, 1.0f, 1.0f);
+  return sf::Color(255 * rgb.x, 255 * rgb.y, 255 * rgb.z);
 }
 
 class Context : public sf::Drawable {
@@ -126,9 +151,7 @@ class Context : public sf::Drawable {
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
 
-  void dropSelection() {
-    select = cursor;
-  }
+  void dropSelection() { select = cursor; }
 
   void replaceColor(int paletteId) {
     sf::Image buf;
@@ -139,12 +162,10 @@ class Context : public sf::Drawable {
     buf.create(xmax - xmin + 1, ymax - ymin + 1, palette[paletteId]);
     image.update(buf, xmin, ymin);
 
-    prev_c=paletteId;
+    prev_c = paletteId;
   }
 
-  void replacePrevColor(){
-    replaceColor(prev_c);
-  }
+  void replacePrevColor() { replaceColor(prev_c); }
 
   void deleteColor() {
     sf::Image buf;
@@ -156,10 +177,16 @@ class Context : public sf::Drawable {
     image.update(buf, xmin, ymin);
   }
 
+  void changePalette(int paletteId, sf::Color rgb) { palette[paletteId] = rgb; }
+
+  void changePaletteHsv(int paletteId, float h, float s, float v) {
+    sf::Color color;
+  }
+
   void pickUpColor(sf::Uint32 c) {
     sf::Color currentColor = image.copyToImage().getPixel(cursor.x, cursor.y);
-    currentColor.a = 255;
-    palette[c] = currentColor;
+    currentColor.a         = 255;
+    changePalette(c, currentColor);
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
@@ -240,7 +267,8 @@ class Context : public sf::Drawable {
     target.draw(backgroundRect);
 
     sprite.setPosition(xmin, ymin);
-    sprite.setTextureRect(sf::IntRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1));
+    sprite.setTextureRect(
+        sf::IntRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1));
     sprite.setColor(sf::Color(0xccccffff));
     target.draw(sprite);
 
@@ -264,51 +292,6 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineColor(sf::Color::Red);
     wrapAround.setOutlineThickness(-0.1f);
     target.draw(wrapAround);
-  }
-
-  void putColor(std::string const& key,std::string const& mode, int32_t fst, int32_t snd, int32_t thd){
-      int indPal=0;
-
-      if ('0' <= key[0] && key[0] <= '9')
-        indPal = key[0];
-      else
-        indPal = key[0];
-
-      if(mode=="rgb") {
-        if(0<=fst && fst<=255 && 0<=snd && snd<=255 && 0<=thd && thd<=255) {
-          // fst - red, snd - green, thd - blue
-          palette[indPal] = sf::Color(fst, snd, thd);
-        }
-      }else{
-        if(fst>360 || fst<0 || snd>100 || snd<0 || thd>100 || thd<0){
-          return;
-        }
-
-        float s = snd/100, v = thd/100;
-        float C = s*v;
-        float X = C*(1-std::abs(fmod(fst/60.0, 2)-1)), m = v-C;
-        float r,g,b;
-        if(fst >= 0 && fst < 60){
-          r = C,g = X,b = 0;
-        }
-        else if(fst >= 60 && fst < 120){
-          r = X,g = C,b = 0;
-        }
-        else if(fst >= 120 && fst < 180){
-          r = 0,g = C,b = X;
-        }
-        else if(fst >= 180 && fst < 240){
-          r = 0,g = X,b = C;
-        }
-        else if(fst >= 240 && fst < 300){
-          r = X,g = 0,b = C;
-        }
-        else{
-          r = C,g = 0,b = X;
-        }
-        int R = (r+m)*255,G = (g+m)*255, B=(b+m)*255;
-        palette[indPal] = sf::Color(R, G, B);
-      }
   }
 };
 
