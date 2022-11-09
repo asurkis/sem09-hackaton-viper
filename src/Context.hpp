@@ -284,7 +284,7 @@ class Context : public sf::Drawable {
           return;
         }
 
-        float s = snd/100, v = thd/100;
+        float s = snd/100.0f, v = thd/100.0f;
         float C = s*v;
         float X = C*(1-std::abs(fmod(fst/60.0, 2)-1)), m = v-C;
         float r,g,b;

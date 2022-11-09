@@ -52,31 +52,48 @@ class Handler {
             break;
 
           case 'h':
-            context.moveCursor(-1, 0);
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            }
-            break;
+            if(!command.empty())
+              context.moveCursor(-std::stoi(command), 0);
+            else
+              context.moveCursor(-1, 0);
 
-          case 'j':
-            context.moveCursor(0, 1);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
             }
+            command.clear();
+            break;
+          case 'j':
+            if(!command.empty())
+              context.moveCursor(0,std::stoi(command));
+            else
+              context.moveCursor(0, 1);
+            if (currentMode == MODE_NORMAL) {
+              context.dropSelection();
+            }
+            command.clear();
             break;
 
           case 'k':
-            context.moveCursor(0, -1);
+            if(!command.empty())
+              context.moveCursor(0,-std::stoi(command));
+            else
+              context.moveCursor(0, -1);
+
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
             }
+            command.clear();
             break;
 
           case 'l':
-            context.moveCursor(1, 0);
+            if(!command.empty())
+              context.moveCursor(std::stoi(command), 0);
+            else
+              context.moveCursor(1, 0);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
             }
+            command.clear();
             break;
 
           case 'd': context.deleteColor(); break;
@@ -110,6 +127,19 @@ class Handler {
             break;
           case 'f':
             context.replacePrevColor();
+            break;
+
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+          case '0':
+            command.push_back(c);
             break;
         }
         break;
