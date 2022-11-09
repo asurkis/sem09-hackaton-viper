@@ -86,7 +86,7 @@ class Context : public sf::Drawable {
     paletteCoordinates['l'] = sf::Vector2f(2, 8);
     paletteCoordinates['p'] = sf::Vector2f(1, 9);
 
-    mainFont.loadFromFile("JetBrainsMonoNL-Regular.ttf");
+    mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
     image.setSmooth(false);
   }
 
