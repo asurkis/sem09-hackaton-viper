@@ -62,16 +62,11 @@ class Handler {
             command.clear();
             switch (c) {
               case ESCAPE:
-                command.clear();
                 prevMode    = MODE_NORMAL;
                 currentMode = MODE_NORMAL;
                 context.dropSelection();
                 break;
-              case 'd':
-                command.clear();
-                context.deleteColor();
-                break;
-
+              case 'd': context.deleteColor(); break;
               case 'r':
                 prevMode    = currentMode;
                 currentMode = MODE_PRE_EDIT_ONE;
