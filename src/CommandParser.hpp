@@ -57,7 +57,7 @@ class CommandParser {
         if(commandArgs.size()==2) {
           int32_t width  = std::stoi(commandArgs[0]), heigth = std::stoi(commandArgs[1]);
           if(width>0 && heigth>0)
-            context.newFile({width, heigth});
+            context.newFile(width, heigth);
         }
         break;
       case PAL:

@@ -21,55 +21,55 @@ int main(int argc, char** argv) {
   }
 
   // black-gray-white 1234567890
-  context.palette[0] = sf::Color::Black;
-  for (int i = 1; i <= 9; ++i) {
-    int v              = 255 * (11 - i) / 10;
-    context.palette[i] = sf::Color(v, v, v);
+  for (int i = 1; i <= 10; ++i) {
+    int v = 255 * (11 - i) / 10;
+
+    context.palette['0' + i] = sf::Color(v, v, v);
   }
 
   // red qaz
-  context.palette['q' - 'a' + 10] = sf::Color(204, 0, 0);
-  context.palette['a' - 'a' + 10] = sf::Color(255, 0, 0);
-  context.palette['z' - 'a' + 10] = sf::Color(255, 102, 102);
+  context.palette['q'] = sf::Color(204, 0, 0);
+  context.palette['a'] = sf::Color(255, 0, 0);
+  context.palette['z'] = sf::Color(255, 102, 102);
 
   // orange wsx
-  context.palette['w' - 'a' + 10] = sf::Color(204, 102, 0);
-  context.palette['s' - 'a' + 10] = sf::Color(255, 153, 51);
-  context.palette['x' - 'a' + 10] = sf::Color(255, 204, 153);
+  context.palette['w'] = sf::Color(204, 102, 0);
+  context.palette['s'] = sf::Color(255, 153, 51);
+  context.palette['x'] = sf::Color(255, 204, 153);
 
   // green edc
-  context.palette['e' - 'a' + 10] = sf::Color(0, 204, 0);
-  context.palette['d' - 'a' + 10] = sf::Color(51, 255, 51);
-  context.palette['c' - 'a' + 10] = sf::Color(153, 255, 153);
+  context.palette['e'] = sf::Color(0, 204, 0);
+  context.palette['d'] = sf::Color(51, 255, 51);
+  context.palette['c'] = sf::Color(153, 255, 153);
 
   // blue rfv
-  context.palette['r' - 'a' + 10] = sf::Color(0, 0, 204);
-  context.palette['f' - 'a' + 10] = sf::Color(51, 51, 255);
-  context.palette['v' - 'a' + 10] = sf::Color(153, 153, 255);
+  context.palette['r'] = sf::Color(0, 0, 204);
+  context.palette['f'] = sf::Color(51, 51, 255);
+  context.palette['v'] = sf::Color(153, 153, 255);
 
   // purple tgb
-  context.palette['t' - 'a' + 10] = sf::Color(102, 0, 204);
-  context.palette['g' - 'a' + 10] = sf::Color(153, 51, 255);
-  context.palette['b' - 'a' + 10] = sf::Color(178, 102, 255);
+  context.palette['t'] = sf::Color(102, 0, 204);
+  context.palette['g'] = sf::Color(153, 51, 255);
+  context.palette['b'] = sf::Color(178, 102, 255);
 
   // pink yhn
-  context.palette['y' - 'a' + 10] = sf::Color(204, 0, 204);
-  context.palette['h' - 'a' + 10] = sf::Color(255, 51, 255);
-  context.palette['n' - 'a' + 10] = sf::Color(178, 153, 255);
+  context.palette['y'] = sf::Color(204, 0, 204);
+  context.palette['h'] = sf::Color(255, 51, 255);
+  context.palette['n'] = sf::Color(178, 153, 255);
 
   // ligth blue ujm
-  context.palette['u' - 'a' + 10] = sf::Color(0, 204, 204);
-  context.palette['j' - 'a' + 10] = sf::Color(51, 255, 255);
-  context.palette['m' - 'a' + 10] = sf::Color(153, 255, 255);
+  context.palette['u'] = sf::Color(0, 204, 204);
+  context.palette['j'] = sf::Color(51, 255, 255);
+  context.palette['m'] = sf::Color(153, 255, 255);
 
   // red pink ik
-  context.palette['i' - 'a' + 10] = sf::Color(255, 0, 127);
-  context.palette['k' - 'a' + 10] = sf::Color(255, 102, 178);
+  context.palette['i'] = sf::Color(255, 0, 127);
+  context.palette['k'] = sf::Color(255, 102, 178);
 
   // green blue olp
-  context.palette['o' - 'a' + 10] = sf::Color(51, 255, 153);
-  context.palette['l' - 'a' + 10] = sf::Color(153, 255, 204);
-  context.palette['p' - 'a' + 10] = sf::Color(0, 153, 76);
+  context.palette['o'] = sf::Color(51, 255, 153);
+  context.palette['l'] = sf::Color(153, 255, 204);
+  context.palette['p'] = sf::Color(0, 153, 76);
 
   window.clear(sf::Color::White);
   window.draw(context);
@@ -82,6 +82,8 @@ int main(int argc, char** argv) {
 
       case sf::Event::TextEntered:
         handler.handleCharacter(context, evt.text.unicode);
+
+      case sf::Event::Resized:
         window.clear(sf::Color::White);
         window.draw(context);
         window.display();
