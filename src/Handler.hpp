@@ -77,6 +77,8 @@ class Handler {
             }
             break;
 
+          case 'd': context.deleteColor(); break;
+
           case 'r':
             prevMode    = currentMode;
             currentMode = MODE_PRE_EDIT_ONE;

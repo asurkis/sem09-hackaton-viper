@@ -136,6 +136,16 @@ class Context : public sf::Drawable {
     image.update(buf, xmin, ymin);
   }
 
+  void deleteColor() {
+    sf::Image buf;
+    auto xmax = std::max(cursor.x, select.x);
+    auto ymax = std::max(cursor.y, select.y);
+    auto xmin = std::min(cursor.x, select.x);
+    auto ymin = std::min(cursor.y, select.y);
+    buf.create(xmax - xmin + 1, ymax - ymin + 1, sf::Color(0));
+    image.update(buf, xmin, ymin);
+  }
+
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::View currentView(
         sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
