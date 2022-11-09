@@ -52,10 +52,11 @@ class Context : public sf::Drawable {
   sf::Vector2u cursor;
   sf::Vector2u select;
   sf::Uint32 prev_c;
-  unsigned int paletteSize    = 22;
-  unsigned int fontSize       = 16;
-  bool drawPalette            = true;
-  bool quitting               = false;
+  unsigned int paletteSize = 22;
+  unsigned int gridSize    = 4;
+  unsigned int fontSize    = 16;
+  bool drawPalette         = true;
+  bool quitting            = false;
   SelectionType selectionType = ST_RECTANGLE;
 
   void updateSelectionRectangle() {
@@ -275,6 +276,7 @@ class Context : public sf::Drawable {
         sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
     target.setView(currentView);
 
+    // CommandLine and text
     sf::Text text;
     text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
     text.setFont(mainFont);
@@ -295,9 +297,12 @@ class Context : public sf::Drawable {
     target.draw(backgroundRect);
     target.draw(text);
 
+    // Palette
     if (drawPalette) {
-      mainSize.y -= 4 * paletteSize;
+      unsigned int minorShift = 4;
+      mainSize.y -= 4 * paletteSize + minorShift * 2;
       float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
+      sf::RectangleShape currentColor;
       for (int i = 0; i < palette.size(); ++i) {
         if (!isPaletteKey(i)) {
           continue;
@@ -306,21 +311,37 @@ class Context : public sf::Drawable {
         sf::Vector2f palettePos;
         palettePos.x = paletteCoordinates[i].y * paletteSize + paletteShift +
                        paletteCoordinates[i].x * paletteSize / 2;
-        palettePos.y = mainSize.y + paletteCoordinates[i].x * paletteSize;
+        palettePos.y = mainSize.y + minorShift + paletteCoordinates[i].x * paletteSize;
         paletteRectangle.setPosition(palettePos);
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
+        if (i == prev_c) {
+          currentColor = paletteRectangle;
+        }
+        paletteRectangle.setOutlineThickness(1.0f);
+        paletteRectangle.setOutlineColor(sf::Color::Black);
+        target.draw(paletteRectangle);
+        paletteRectangle.setOutlineThickness(-1.0f);
         target.draw(paletteRectangle);
       }
+      currentColor.setOutlineThickness(2.0f);
+      currentColor.setOutlineColor(sf::Color::Cyan);
+      target.draw(currentColor);
+      currentColor.setOutlineThickness(-2.0f);
+      currentColor.setOutlineColor(sf::Color::Red);
+      target.draw(currentColor);
     }
 
+    // Image
     sf::View imageView;
     sf::Vector2f viewSize(image.getSize().x, 0.f);
     viewSize.y = viewSize.x * mainSize.y / mainSize.x;
+    float pixelSize = 1.0f*mainSize.x / image.getSize().x;
     if (viewSize.y < image.getSize().y) {
       float tmp = image.getSize().y / viewSize.y;
       viewSize.y *= tmp;
       viewSize.x *= tmp;
+      pixelSize = 1.0f*mainSize.y / image.getSize().y;
     }
     imageView.setSize(viewSize);
     imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) /
@@ -349,15 +370,51 @@ class Context : public sf::Drawable {
       target.draw(sprite);
     }
 
+    // Grid
+    target.setView(currentView);
+
+    sf::Vector2f imageTopLeftPos((mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
+                                 (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
+    sf::RectangleShape imageFrame;
+    imageFrame.setPosition(imageTopLeftPos);
+    imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2, 
+                                    pixelSize * image.getSize().y + 2));
+    imageFrame.setFillColor(sf::Color::Transparent);
+    imageFrame.setOutlineThickness(-2.0f);
+    imageFrame.setOutlineColor(sf::Color::Black);
+    target.draw(imageFrame);
+
+    sf::Vector2f currentLinePos = imageTopLeftPos;
+    for (unsigned int i = 0; i <= image.getSize().y; i += gridSize) {
+      sf::RectangleShape horizontalLine;
+      horizontalLine.setPosition(currentLinePos);
+      horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
+      horizontalLine.setFillColor(sf::Color::Black);
+      target.draw(horizontalLine);
+      currentLinePos.y += pixelSize * gridSize; 
+    }
+
+    currentLinePos = imageTopLeftPos;
+    for (unsigned int i = 0; i <= image.getSize().x; i += gridSize) {
+      sf::RectangleShape verticalLine;
+      verticalLine.setPosition(currentLinePos);
+      verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
+      verticalLine.setFillColor(sf::Color::Black);
+      target.draw(verticalLine);
+      currentLinePos.x += pixelSize * gridSize; 
+    }
+
+    // Cursor
     sf::RectangleShape wrapAround;
-    wrapAround.setPosition(sf::Vector2f(cursor));
-    wrapAround.setSize(sf::Vector2f(1, 1));
+    wrapAround.setPosition(imageTopLeftPos +
+                           sf::Vector2f(pixelSize * cursor.x, pixelSize * cursor.y));
+    wrapAround.setSize(sf::Vector2f(pixelSize, pixelSize));
     wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
     wrapAround.setOutlineColor(sf::Color::Cyan);
-    wrapAround.setOutlineThickness(0.1f);
+    wrapAround.setOutlineThickness(2.0f);
     target.draw(wrapAround);
     wrapAround.setOutlineColor(sf::Color::Red);
-    wrapAround.setOutlineThickness(-0.1f);
+    wrapAround.setOutlineThickness(-2.0f);
     target.draw(wrapAround);
   }
 };
