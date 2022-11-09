@@ -22,7 +22,8 @@ enum Commands {
   EXPAND,
   LINE,
   REC,
-  PALATTE,
+  PAL,
+  PALETTE,
   SHADING,
 };
 
@@ -36,7 +37,8 @@ class CommandParser {
       {L"expand", EXPAND   },
       {L"line",   LINE     },
       {L"rec",    REC      },
-      {L"p",      PALATTE  },
+      {L"pal",    PAL      },
+      {L"p",      PALETTE  },
       {L"r",      SHADING  }
   };
   std::wstring commandName;
@@ -58,6 +60,15 @@ class CommandParser {
             context.newFile(width, heigth);
         }
         break;
+      case PAL:
+        //key_type_color_color
+        if(commandArgs.size()==5){
+            if(commandArgs[0].size()==1 && (commandArgs[1]==L"rgb" || commandArgs[1]==L"hsv")){
+              int32_t fst =std::stoi(commandArgs[2]), snd =std::stoi(commandArgs[3]), thd=std::stoi(commandArgs[4]);
+              context.putColor(ws2s(commandArgs[0]),ws2s(commandArgs[1]), fst, snd, thd);
+            }
+        }
+
     }
     return 0;
   }
