@@ -51,7 +51,7 @@ class CommandParser {
         if (commandArgs.size() == 1)
           context.loadFile(ws2s(commandArgs[0]));
         break;
-      case EXPAND: context.expand(stoi(commandArgs[0]), commandArgs[1]); break;
+      case EXPAND: context.expand(commandArgs[0], stoi(commandArgs[1])); break;
       case NEW_FILE:
         // if given
         if (commandArgs.size() == 2) {

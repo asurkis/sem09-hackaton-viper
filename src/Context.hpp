@@ -301,7 +301,7 @@ class Context : public sf::Drawable {
     changePalette(c, currentColor);
   }
 
-  void expand(int offset, const std::wstring& direction) {
+  void expand(const std::wstring& direction, int offset) {
     int x = image.getSize().x;
     int y = image.getSize().y;
 
@@ -314,11 +314,29 @@ class Context : public sf::Drawable {
       x += offset;
     }
 
+
+
     sf::Image expandedImage;
     if (x <= 0 || y <= 0) {
       std::cout << "Oversqueeze" << std::endl;
       return;
     }
+
+    if (offset < 0)
+      if (direction == L"left") {
+        cursor.x = std::min(x , std::max((int)cursor.x + offset, 0));
+        select.x = std::min(x, std::max((int)select.x + offset, 0));
+        std::cout << cursor.x << ' ' << select.x << std::endl;
+      } if (direction == L"up") {
+        cursor.y = std::min(y, std::max((int)cursor.y + offset, 0));
+        select.y = std::min(y, std::max((int)select.y + offset, 0));
+    } else {
+        cursor.x = std::min(x - 1, (int)cursor.x);
+        cursor.y = std::min(y - 1, (int)cursor.y);
+        select.x = std::min(x - 1, (int)select.x);
+        select.y = std::min(y - 1, (int)select.y);
+    }
+
 
     expandedImage.create(x, y, sf::Color(0));
     auto te = image.copyToImage();
@@ -353,8 +371,7 @@ class Context : public sf::Drawable {
     }
 
     image.loadFromImage(expandedImage);
-    cursor.x = std::min((int)cursor.x, x - 1);
-    cursor.y = std::min((int)cursor.y, y - 1);
+
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
