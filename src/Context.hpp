@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <iostream>
@@ -29,10 +30,10 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   Context() : palette(36) {
-    paletteCoordinates[0] = sf::Vector2f(0, 10);
+    paletteCoordinates[0] = sf::Vector2f(0, 9);
 
-    for (int i = 0; i <= 9; ++i) {
-      paletteCoordinates[i] = sf::Vector2f(0, i);
+    for (int i = 1; i <= 9; ++i) {
+      paletteCoordinates[i] = sf::Vector2f(0, i - 1);
     }
     
     // red qaz
@@ -122,43 +123,9 @@ class Context : public sf::Drawable {
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-    sf::Sprite sprite(image);
+    sf::View currentView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
+    target.setView(currentView);
 
-    sf::View imageView(sf::FloatRect(0.f, 0.f, image.getSize().x, image.getSize().y));
-//    imageView.setCenter(cursor.x, cursor.y);
-    imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 0.8f));
-    target.setView(imageView);
-    target.draw(sprite);
-
-    sf::RectangleShape wrapAround;
-    wrapAround.setPosition(sf::Vector2f(cursor));
-    wrapAround.setSize(sf::Vector2f(1, 1));
-    wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
-    wrapAround.setOutlineColor(sf::Color::Cyan);
-    wrapAround.setOutlineThickness(0.1f);
-    target.draw(wrapAround);
-    wrapAround.setOutlineColor(sf::Color::Red);
-    wrapAround.setOutlineThickness(-0.1f);
-    target.draw(wrapAround);
-
-    sf::View paletteView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
-    paletteView.setViewport(sf::FloatRect(0.f, 0.8f, 1.f, 1.f));
-    target.setView(paletteView);
-
-    if (drawPalette) {
-      for (int i = 0; i < palette.size(); ++i) {
-        sf::RectangleShape paletteRectangle;
-        paletteRectangle.setPosition(
-            sf::Vector2f(paletteCoordinates[i].y * paletteSize,
-                         paletteCoordinates[i].x * paletteSize));
-        paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
-        paletteRectangle.setFillColor(palette[i]);
-        target.draw(paletteRectangle);
-      }
-    }
-
-    target.setView(target.getDefaultView());
-    
     sf::Text text;
     text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
     text.setFont(mainFont);
@@ -178,6 +145,49 @@ class Context : public sf::Drawable {
 
     target.draw(backgroundRect);
     target.draw(text);
+
+
+    if (drawPalette) {
+      mainSize.y -= 4 * paletteSize;
+      for (int i = 0; i < palette.size(); ++i) {
+        sf::RectangleShape paletteRectangle;
+        sf::Vector2f palettePos;
+        palettePos.x = paletteCoordinates[i].y * paletteSize +
+                       paletteCoordinates[i].x * paletteSize / 2;
+        palettePos.y = mainSize.y + paletteCoordinates[i].x * paletteSize;
+        paletteRectangle.setPosition(palettePos);
+        paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
+        paletteRectangle.setFillColor(palette[i]);
+        target.draw(paletteRectangle);
+      }
+    }
+    
+    sf::Sprite sprite(image);
+    float imageMaxSize = std::max(image.getSize().x, image.getSize().y);
+    sf::View imageView;
+    sf::Vector2f viewSize(image.getSize().x, 0.f);
+    viewSize.y =  viewSize.x * mainSize.y / mainSize.x;
+    if (viewSize.y < image.getSize().y) {
+      float tmp = image.getSize().y / viewSize.y;
+      viewSize.y *= tmp;
+      viewSize.x *= tmp;
+    }
+    imageView.setSize(viewSize);
+    imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) / 2.0f);
+    imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y/target.getSize().y));
+    target.setView(imageView);
+    target.draw(sprite);
+
+    sf::RectangleShape wrapAround;
+    wrapAround.setPosition(sf::Vector2f(cursor));
+    wrapAround.setSize(sf::Vector2f(1, 1));
+    wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
+    wrapAround.setOutlineColor(sf::Color::Cyan);
+    wrapAround.setOutlineThickness(0.1f);
+    target.draw(wrapAround);
+    wrapAround.setOutlineColor(sf::Color::Red);
+    wrapAround.setOutlineThickness(-0.1f);
+    target.draw(wrapAround);
   }
 
   void newFile(std::pair<int32_t,int32_t> size){
