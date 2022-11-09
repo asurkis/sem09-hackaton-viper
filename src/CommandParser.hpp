@@ -18,11 +18,8 @@ enum Commands {
   SAVE_FILE,
   LOAD_FILE,
   NEW_FILE,
-  SCALE,
   EXPAND,
-  LINE,
-  REC,
-  PALATTE,
+  PAL,
   SHADING,
 };
 
@@ -32,11 +29,8 @@ class CommandParser {
       {L"w",      SAVE_FILE},
       {L"e",      LOAD_FILE},
       {L"new",    NEW_FILE },
-      {L"scale",  SCALE    },
       {L"expand", EXPAND   },
-      {L"line",   LINE     },
-      {L"rec",    REC      },
-      {L"p",      PALATTE  },
+      {L"pal",    PAL      },
       {L"r",      SHADING  }
   };
   std::wstring commandName;
@@ -47,17 +41,43 @@ class CommandParser {
     auto cur_command = parseCommand(commandString);
     switch (cur_command) {
       case QUIT: context.quit(); break;
-      case SAVE_FILE: context.saveFile(); break;
-      case LOAD_FILE: context.loadFile(ws2s(commandArgs[0])); break;
+      case SAVE_FILE:
+        if (commandArgs.size() == 1)
+          context.saveFile(ws2s(commandArgs[0]));
+        else
+          context.saveFile();
+        break;
+      case LOAD_FILE:
+        if (commandArgs.size() == 1)
+          context.loadFile(ws2s(commandArgs[0]));
+        break;
       case EXPAND: context.expand(stoi(commandArgs[0]), commandArgs[1]); break;
       case NEW_FILE:
-        //if given
-        if(commandArgs.size()==2) {
-          int32_t width  = std::stoi(commandArgs[0]), heigth = std::stoi(commandArgs[1]);
-          if(width>0 && heigth>0)
+        // if given
+        if (commandArgs.size() == 2) {
+          int32_t width  = std::stoi(commandArgs[0]),
+                  heigth = std::stoi(commandArgs[1]);
+          if (width > 0 && heigth > 0)
             context.newFile(width, heigth);
         }
         break;
+      case PAL:
+        // key_type_color_color
+        if (commandArgs.size() == 5) {
+          if (commandArgs[0].size() == 1 &&
+              (commandArgs[1] == L"rgb" || commandArgs[1] == L"hsv")) {
+            int32_t fst = std::stoi(commandArgs[2]),
+                    snd = std::stoi(commandArgs[3]),
+                    thd = std::stoi(commandArgs[4]);
+            if (commandArgs[1] == L"rgb") {
+              context.changePalette(commandArgs[0][0],
+                                    sf::Color(fst, snd, thd));
+            } else if (commandArgs[1] == L"hsv") {
+              context.changePalette(commandArgs[0][0],
+                                    hsv(fst, 0.01f * snd, 0.01f * thd));
+            }
+          }
+        }
     }
     return 0;
   }
@@ -77,10 +97,11 @@ class CommandParser {
 
   int parseCommand(const std::wstring& commandString) {
     setCommandNameArgs(commandString);
-    if(commandsDict.count(commandName)==0)
+    if (commandsDict.count(commandName) == 0) {
       return ERROR;
-    else
+    } else {
       return commandsDict.at(commandName);
+    }
   }
 
   int setCommandNameArgs(const std::wstring& command) {
