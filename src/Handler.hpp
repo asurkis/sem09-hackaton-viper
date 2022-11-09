@@ -55,6 +55,8 @@ class Handler {
             context.moveCursor(-1, 0);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             break;
 
@@ -62,6 +64,8 @@ class Handler {
             context.moveCursor(0, 1);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             break;
 
@@ -69,6 +73,8 @@ class Handler {
             context.moveCursor(0, -1);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             break;
 
@@ -76,6 +82,8 @@ class Handler {
             context.moveCursor(1, 0);
             if (currentMode == MODE_NORMAL) {
               context.dropSelection();
+            } else {
+              context.updateSelection();
             }
             break;
 
@@ -105,12 +113,10 @@ class Handler {
             currentMode = MODE_COMMAND;
             break;
           case 'p':
-            prevMode = currentMode;
+            prevMode    = currentMode;
             currentMode = MODE_PICK_UP;
             break;
-          case 'f':
-            context.replacePrevColor();
-            break;
+          case 'f': context.replacePrevColor(); break;
         }
         break;
 

@@ -9,27 +9,80 @@
 #include <SFML/System/Utf.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <string_view>
 #include <vector>
-#include <cmath>
 
 inline bool isPaletteKey(sf::Uint32 c) {
   return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z');
 }
 
+inline sf::Color hsv(float h, float s, float v) {
+  h     = h / 60.0f;
+  int i = (int)h;
+  if (i < 0) {
+    --i;
+  }
+  float frac = h - i;
+
+  i = (i % 6 + 6) % 6;
+
+  sf::Vector3f fullSat;
+  switch (i) {
+    case 0: fullSat = sf::Vector3f(1.0f, frac, 0.0f); break;
+    case 1: fullSat = sf::Vector3f(1.0f - frac, 1.0f, 0.0f); break;
+    case 2: fullSat = sf::Vector3f(0.0f, 1.0f, frac); break;
+    case 3: fullSat = sf::Vector3f(0.0f, 1.0f - frac, 1.0f); break;
+    case 4: fullSat = sf::Vector3f(frac, 0.0f, 1.0f); break;
+    case 5: fullSat = sf::Vector3f(1.0f, 0.0f, 1.0f - frac); break;
+  }
+
+  sf::Vector3f rgb =
+      v * s * fullSat + v * (1.0f - s) * sf::Vector3f(1.0f, 1.0f, 1.0f);
+  return sf::Color(255 * rgb.x, 255 * rgb.y, 255 * rgb.z);
+}
+
+enum SelectionType {
+  ST_RECTANGLE,
+  ST_LINE,
+  // ST_ELLIPSE,
+};
+
 class Context : public sf::Drawable {
-  sf::Font mainFont;
+  std::vector<sf::Vector2f> paletteCoordinates;
+  std::vector<sf::Vector2u> selectedPixels;
+  std::string lastFilepath;
   sf::Texture image;
+  sf::Font mainFont;
   sf::Vector2u cursor;
   sf::Vector2u select;
-  std::string lastFilepath;
   sf::Uint32 prev_c;
-  std::vector<sf::Vector2f> paletteCoordinates;
-  unsigned int paletteSize = 22;
-  unsigned int fontSize    = 16;
-  bool drawPalette         = true;
-  bool quitting            = false;
+  unsigned int paletteSize    = 22;
+  unsigned int fontSize       = 16;
+  bool drawPalette            = true;
+  bool quitting               = false;
+  SelectionType selectionType = ST_RECTANGLE;
+
+  void updateSelectionRectangle() {
+    int xstart = select.x;
+    int xend   = cursor.x;
+    int xstep  = xend < xstart ? -1 : 1;
+    xend += xstep;
+
+    int ystart = select.y;
+    int yend   = cursor.y;
+    int ystep  = yend < ystart ? -1 : 1;
+    yend += ystep;
+
+    for (int x = xstart; x != xend; x += xstep) {
+      for (int y = ystart; y != yend; y += ystep) {
+        selectedPixels.push_back(sf::Vector2u(x, y));
+      }
+    }
+  }
+
+  void updateSelectionLine() {}
 
  public:
   std::vector<sf::Color> palette;
@@ -126,40 +179,51 @@ class Context : public sf::Drawable {
     cursor.y = std::max(0, std::min((int)image.getSize().y - 1, cy));
   }
 
+  void setSelectionType(SelectionType st) {
+    selectionType = st;
+    updateSelection();
+  }
+
+  void updateSelection() {
+    selectedPixels.clear();
+    switch (selectionType) {
+      case ST_RECTANGLE: updateSelectionRectangle(); break;
+      case ST_LINE: updateSelectionLine(); break;
+    }
+  }
+
   void dropSelection() {
     select = cursor;
+    updateSelection();
+  }
+
+  void replaceColorRgb(sf::Color color) {
+    sf::Image buf;
+    buf.create(1, 1, color);
+    for (auto const& [x, y] : selectedPixels) {
+      image.update(buf, x, y);
+    }
   }
 
   void replaceColor(int paletteId) {
-    sf::Image buf;
-    auto xmax = std::max(cursor.x, select.x);
-    auto ymax = std::max(cursor.y, select.y);
-    auto xmin = std::min(cursor.x, select.x);
-    auto ymin = std::min(cursor.y, select.y);
-    buf.create(xmax - xmin + 1, ymax - ymin + 1, palette[paletteId]);
-    image.update(buf, xmin, ymin);
-
-    prev_c=paletteId;
+    replaceColorRgb(palette[paletteId]);
+    prev_c = paletteId;
   }
 
-  void replacePrevColor(){
-    replaceColor(prev_c);
-  }
+  void replacePrevColor() { replaceColor(prev_c); }
 
-  void deleteColor() {
-    sf::Image buf;
-    auto xmax = std::max(cursor.x, select.x);
-    auto ymax = std::max(cursor.y, select.y);
-    auto xmin = std::min(cursor.x, select.x);
-    auto ymin = std::min(cursor.y, select.y);
-    buf.create(xmax - xmin + 1, ymax - ymin + 1, sf::Color(0));
-    image.update(buf, xmin, ymin);
+  void deleteColor() { replaceColorRgb(sf::Color(0)); }
+
+  void changePalette(int paletteId, sf::Color rgb) { palette[paletteId] = rgb; }
+
+  void changePaletteHsv(int paletteId, float h, float s, float v) {
+    sf::Color color;
   }
 
   void pickUpColor(sf::Uint32 c) {
     sf::Color currentColor = image.copyToImage().getPixel(cursor.x, cursor.y);
-    currentColor.a = 255;
-    palette[c] = currentColor;
+    currentColor.a         = 255;
+    changePalette(c, currentColor);
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
@@ -229,30 +293,17 @@ class Context : public sf::Drawable {
     sf::Sprite sprite(image);
     target.draw(sprite);
 
-    auto xmax = std::max(cursor.x, select.x);
-    auto ymax = std::max(cursor.y, select.y);
-    auto xmin = std::min(cursor.x, select.x);
-    auto ymin = std::min(cursor.y, select.y);
-
-    backgroundRect.setPosition(xmin, ymin);
-    backgroundRect.setSize(sf::Vector2f(xmax - xmin + 1, ymax - ymin + 1));
-    backgroundRect.setFillColor(sf::Color(0xcc00ffff));
-    target.draw(backgroundRect);
-
-    sprite.setPosition(xmin, ymin);
-    sprite.setTextureRect(sf::IntRect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1));
-    sprite.setColor(sf::Color(0xccccffff));
-    target.draw(sprite);
-
-    backgroundRect.setPosition(cursor.x, cursor.y);
     backgroundRect.setSize(sf::Vector2f(1, 1));
-    backgroundRect.setFillColor(sf::Color::Magenta);
-    target.draw(backgroundRect);
-
-    sprite.setPosition(cursor.x, cursor.y);
-    sprite.setTextureRect(sf::IntRect(cursor.x, cursor.y, 1, 1));
-    sprite.setColor(sf::Color::White);
-    target.draw(sprite);
+    backgroundRect.setFillColor(sf::Color(0xcc00ffff));
+    for (size_t i = 0; i + 1 < selectedPixels.size(); ++i) {
+      auto const& [x, y] = selectedPixels[i];
+      backgroundRect.setPosition(x, y);
+      target.draw(backgroundRect);
+      sprite.setPosition(x, y);
+      sprite.setTextureRect(sf::IntRect(x, y, 1, 1));
+      sprite.setColor(sf::Color(0xccccffff));
+      target.draw(sprite);
+    }
 
     sf::RectangleShape wrapAround;
     wrapAround.setPosition(sf::Vector2f(cursor));
@@ -264,51 +315,6 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineColor(sf::Color::Red);
     wrapAround.setOutlineThickness(-0.1f);
     target.draw(wrapAround);
-  }
-
-  void putColor(std::string const& key,std::string const& mode, int32_t fst, int32_t snd, int32_t thd){
-      int indPal=0;
-
-      if ('0' <= key[0] && key[0] <= '9')
-        indPal = key[0];
-      else
-        indPal = key[0];
-
-      if(mode=="rgb") {
-        if(0<=fst && fst<=255 && 0<=snd && snd<=255 && 0<=thd && thd<=255) {
-          // fst - red, snd - green, thd - blue
-          palette[indPal] = sf::Color(fst, snd, thd);
-        }
-      }else{
-        if(fst>360 || fst<0 || snd>100 || snd<0 || thd>100 || thd<0){
-          return;
-        }
-
-        float s = snd/100, v = thd/100;
-        float C = s*v;
-        float X = C*(1-std::abs(fmod(fst/60.0, 2)-1)), m = v-C;
-        float r,g,b;
-        if(fst >= 0 && fst < 60){
-          r = C,g = X,b = 0;
-        }
-        else if(fst >= 60 && fst < 120){
-          r = X,g = C,b = 0;
-        }
-        else if(fst >= 120 && fst < 180){
-          r = 0,g = C,b = X;
-        }
-        else if(fst >= 180 && fst < 240){
-          r = 0,g = X,b = C;
-        }
-        else if(fst >= 240 && fst < 300){
-          r = X,g = 0,b = C;
-        }
-        else{
-          r = C,g = 0,b = X;
-        }
-        int R = (r+m)*255,G = (g+m)*255, B=(b+m)*255;
-        palette[indPal] = sf::Color(R, G, B);
-      }
   }
 };
 
