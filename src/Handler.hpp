@@ -46,11 +46,71 @@ class Handler {
       case MODE_NORMAL:
       case MODE_SELECTION:
         switch (c) {
+
           case ESCAPE:
-            prevMode    = MODE_NORMAL;
-            currentMode = MODE_NORMAL;
-            context.dropSelection();
-            break;
+          case 'd':
+          case 'r':
+          case 'c':
+          case 's':
+          case 'a':
+          case 'R':
+          case 'T':
+          case 'm':
+          case 'p':
+          case 'f':
+          case ':': {
+            command.clear();
+            switch (c) {
+              case ESCAPE:
+                command.clear();
+                prevMode    = MODE_NORMAL;
+                currentMode = MODE_NORMAL;
+                context.dropSelection();
+                break;
+              case 'd':
+                command.clear();
+                context.deleteColor();
+                break;
+
+              case 'r':
+                prevMode    = currentMode;
+                currentMode = MODE_PRE_EDIT_ONE;
+                break;
+
+              case 'c':
+                prevMode    = currentMode;
+                currentMode = MODE_PRE_EDIT;
+                break;
+              case 's':
+                prevMode = currentMode;
+                if (currentMode == MODE_SELECTION) {
+                  currentMode = MODE_NORMAL;
+                  context.dropSelection();
+                } else {
+                  currentMode = MODE_SELECTION;
+                }
+                break;
+              case 'a': context.swapCursor(); break;
+              case 'R':
+                currentMode = MODE_SELECTION;
+                context.setSelectionType(ST_RECTANGLE);
+                break;
+              case 'T':
+                currentMode = MODE_SELECTION;
+                context.setSelectionType(ST_LINE);
+                break;
+              case 'm':
+                currentMode = MODE_NORMAL;
+                context.selectSameColor();
+                break;
+              case 'p':
+                prevMode    = currentMode;
+                currentMode = MODE_PICK_UP;
+                break;
+              case 'f': context.replacePrevColor(); break;
+              case ':': currentMode = MODE_COMMAND; break;
+            }
+          }  break;
 
           case 'h':
           case 'j':
@@ -71,55 +131,6 @@ class Handler {
             }
           } break;
 
-          case 'd': context.deleteColor(); break;
-
-          case 'r':
-            prevMode    = currentMode;
-            currentMode = MODE_PRE_EDIT_ONE;
-            break;
-
-          case 'c':
-            prevMode    = currentMode;
-            currentMode = MODE_PRE_EDIT;
-            break;
-
-          case 's':
-            prevMode = currentMode;
-            if (currentMode == MODE_SELECTION) {
-              currentMode = MODE_NORMAL;
-              context.dropSelection();
-            } else {
-              currentMode = MODE_SELECTION;
-            }
-            break;
-
-          case 'a': context.swapCursor(); break;
-
-          case 'R':
-            currentMode = MODE_SELECTION;
-            context.setSelectionType(ST_RECTANGLE);
-            break;
-
-          case 'T':
-            currentMode = MODE_SELECTION;
-            context.setSelectionType(ST_LINE);
-            break;
-
-          case 'm':
-            currentMode = MODE_NORMAL;
-            context.selectSameColor();
-            break;
-
-          case ':':
-            command.clear();
-            currentMode = MODE_COMMAND;
-            break;
-
-          case 'p':
-            prevMode    = currentMode;
-            currentMode = MODE_PICK_UP;
-            break;
-
           case '1':
           case '2':
           case '3':
@@ -131,7 +142,6 @@ class Handler {
           case '9':
           case '0': command.push_back(c); break;
 
-          case 'f': context.replacePrevColor(); break;
         }
         break;
 
