@@ -18,6 +18,7 @@ enum Mode {
   MODE_PRE_EDIT,
   MODE_EDIT,
   MODE_COMMAND,
+  MODE_PICK_UP,
 };
 
 inline std::wstring_view contextPrefix(Mode mode) {
@@ -28,6 +29,7 @@ inline std::wstring_view contextPrefix(Mode mode) {
     case MODE_PRE_EDIT: return L"c";
     case MODE_EDIT: return L"EDIT";
     case MODE_COMMAND: return L":";
+    case MODE_PICK_UP: return L"p";
   }
   return L"";
 }
@@ -103,6 +105,11 @@ class Handler {
             currentMode = MODE_COMMAND;
 
             break;
+          case 'p':
+            prevMode = currentMode;
+            currentMode = MODE_PICK_UP;
+
+            break;
         }
         break;
 
@@ -145,6 +152,11 @@ class Handler {
         } else {
           command.push_back(c);
         }
+        break;
+
+      case MODE_PICK_UP:
+        context.pickUpColor(c);
+        currentMode = prevMode;
         break;
     }
 
