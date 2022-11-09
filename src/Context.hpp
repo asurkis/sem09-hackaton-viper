@@ -356,40 +356,6 @@ class Context : public sf::Drawable {
     image.loadFromImage(expandedImage);
   }
 
-  /*
-  int twice = 0;
-  void expand(int offset, const std::wstring& direction) {
-
-    if (offset < 0)
-      std::cout << offset << std::endl;
-
-
-    auto x = image.getSize().x;
-    auto y = image.getSize().y;
-
-    sf::IntRect rectSourceCut(0, 0, x, y);
-
-    if (direction == L"Bottom" || direction == L"Top") {
-      y += offset;
-    } else {
-      x += offset;
-    }
-    sf::Image expandedImage;
-    expandedImage.create(x, y, sf::Color::Magenta);
-    auto te = image.copyToImage();
-
-    if (direction == L"Left") {
-      expandedImage.copy(te, offset, 0);
-    } else if (direction == L"Top") {
-      expandedImage.copy(te, 0, offset);
-    } else if (direction == L"Bottom" || direction == L"Right") {
-      expandedImage.copy(te, 0, 0);
-    }
-
-    image.loadFromImage(expandedImage);
-  }
-  */
-
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::View currentView(
         sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
