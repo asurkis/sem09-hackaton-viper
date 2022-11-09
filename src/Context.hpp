@@ -211,7 +211,6 @@ class Context : public sf::Drawable {
     }
   }
 
-
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
     int cy   = (int)cursor.y + dy;
@@ -302,43 +301,32 @@ class Context : public sf::Drawable {
   }
 
   void expand(const std::wstring& direction, int offset) {
-    int x = image.getSize().x;
-    int y = image.getSize().y;
+    int sizeX = image.getSize().x;
+    int sizeY = image.getSize().y;
 
-
-    if (direction == L"up" ||
-        direction == L"down"
-        ) {
-      y += offset;
+    if (direction == L"up" || direction == L"down") {
+      sizeY += offset;
     } else {
-      x += offset;
+      sizeX += offset;
     }
 
-
-
     sf::Image expandedImage;
-    if (x <= 0 || y <= 0) {
+    if (sizeX <= 0 || sizeY <= 0) {
       std::cout << "Oversqueeze" << std::endl;
       return;
     }
 
-    if (offset < 0)
-      if (direction == L"left") {
-        cursor.x = std::min(x , std::max((int)cursor.x + offset, 0));
-        select.x = std::min(x, std::max((int)select.x + offset, 0));
-        std::cout << cursor.x << ' ' << select.x << std::endl;
-      } if (direction == L"up") {
-        cursor.y = std::min(y, std::max((int)cursor.y + offset, 0));
-        select.y = std::min(y, std::max((int)select.y + offset, 0));
-    } else {
-        cursor.x = std::min(x - 1, (int)cursor.x);
-        cursor.y = std::min(y - 1, (int)cursor.y);
-        select.x = std::min(x - 1, (int)select.x);
-        select.y = std::min(y - 1, (int)select.y);
+    if (direction == L"left") {
+      cursor.x += offset;
+    } else if (direction == L"up") {
+      cursor.y += offset;
     }
+    cursor.x = std::max(0, std::min(sizeX - 1, (int)cursor.x));
+    cursor.y = std::max(0, std::min(sizeY - 1, (int)cursor.y));
+    select.x = std::max(0, std::min(sizeX - 1, (int)select.x));
+    select.y = std::max(0, std::min(sizeY - 1, (int)select.y));
 
-
-    expandedImage.create(x, y, sf::Color(0));
+    expandedImage.create(sizeX, sizeY, sf::Color(0));
     auto te = image.copyToImage();
 
     if (0 <= offset) {
@@ -346,32 +334,27 @@ class Context : public sf::Drawable {
         expandedImage.copy(te, offset, 0);
       } else if (direction == L"up") {
         expandedImage.copy(te, 0, offset);
-      } else if (direction == L"right" ||
-                 direction == L"down") {
+      } else if (direction == L"right" || direction == L"down") {
         expandedImage.copy(te, 0, 0);
       } else {
         std::cout << "Wrong Direction" << std::endl;
         return;
       }
     } else {
+      sf::IntRect srcRect(0, 0, sizeX, sizeY);
       if (direction == L"left") {
-        sf::IntRect cutRect(-offset, 0, x, y - offset);
-        expandedImage.copy(te, 0, 0, cutRect);
+        srcRect.left = -offset;
       } else if (direction == L"up") {
-        sf::IntRect cutRect(0, -offset, x - offset, y);
-        expandedImage.copy(te, 0, 0, cutRect);
-      } else if (direction == L"right" ||
-                 direction == L"down") {
-        sf::IntRect cutRect(0, 0, x, y);
-        expandedImage.copy(te, 0, 0, cutRect);
+        srcRect.top = -offset;
+      } else if (direction == L"right" || direction == L"down") {
       } else {
         std::cout << "Wrong Direction" << std::endl;
         return;
       }
+      expandedImage.copy(te, 0, 0, srcRect);
     }
 
     image.loadFromImage(expandedImage);
-
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
