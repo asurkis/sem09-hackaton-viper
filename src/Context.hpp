@@ -211,8 +211,6 @@ class Context : public sf::Drawable {
     }
   }
 
-  void expand(int offset, const std::wstring& direction) {}
-
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
     int cy   = (int)cursor.y + dy;
@@ -300,6 +298,63 @@ class Context : public sf::Drawable {
     sf::Color currentColor = image.copyToImage().getPixel(cursor.x, cursor.y);
     currentColor.a         = 255;
     changePalette(c, currentColor);
+  }
+
+  void expand(const std::wstring& direction, int offset) {
+    int sizeX = image.getSize().x;
+    int sizeY = image.getSize().y;
+
+    if (direction == L"up" || direction == L"down") {
+      sizeY += offset;
+    } else {
+      sizeX += offset;
+    }
+
+    sf::Image expandedImage;
+    if (sizeX <= 0 || sizeY <= 0) {
+      std::cout << "Oversqueeze" << std::endl;
+      return;
+    }
+
+    if (direction == L"left") {
+      cursor.x += offset;
+    } else if (direction == L"up") {
+      cursor.y += offset;
+    }
+    cursor.x = std::max(0, std::min(sizeX - 1, (int)cursor.x));
+    cursor.y = std::max(0, std::min(sizeY - 1, (int)cursor.y));
+    select.x = std::max(0, std::min(sizeX - 1, (int)select.x));
+    select.y = std::max(0, std::min(sizeY - 1, (int)select.y));
+
+    expandedImage.create(sizeX, sizeY, sf::Color(0));
+    auto te = image.copyToImage();
+
+    if (0 <= offset) {
+      if (direction == L"left") {
+        expandedImage.copy(te, offset, 0);
+      } else if (direction == L"up") {
+        expandedImage.copy(te, 0, offset);
+      } else if (direction == L"right" || direction == L"down") {
+        expandedImage.copy(te, 0, 0);
+      } else {
+        std::cout << "Wrong Direction" << std::endl;
+        return;
+      }
+    } else {
+      sf::IntRect srcRect(0, 0, sizeX, sizeY);
+      if (direction == L"left") {
+        srcRect.left = -offset;
+      } else if (direction == L"up") {
+        srcRect.top = -offset;
+      } else if (direction == L"right" || direction == L"down") {
+      } else {
+        std::cout << "Wrong Direction" << std::endl;
+        return;
+      }
+      expandedImage.copy(te, 0, 0, srcRect);
+    }
+
+    image.loadFromImage(expandedImage);
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
