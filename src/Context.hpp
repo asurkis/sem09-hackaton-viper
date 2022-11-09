@@ -2,12 +2,6 @@
 #define Context_hpp_INCLUDED
 
 #include <SFML/Graphics.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Graphics/View.hpp>
-#include <SFML/System/Utf.hpp>
-#include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -65,24 +59,61 @@ class Context : public sf::Drawable {
   SelectionType selectionType = ST_RECTANGLE;
 
   void updateSelectionRectangle() {
-    int xstart = select.x;
-    int xend   = cursor.x;
-    int xstep  = xend < xstart ? -1 : 1;
-    xend += xstep;
+    int x1 = select.x;
+    int x2 = cursor.x;
+    int dx = x2 < x1 ? -1 : 1;
+    x2 += dx;
 
-    int ystart = select.y;
-    int yend   = cursor.y;
-    int ystep  = yend < ystart ? -1 : 1;
-    yend += ystep;
+    int y1 = select.y;
+    int y2 = cursor.y;
+    int dy = y2 < y1 ? -1 : 1;
+    y2 += dy;
 
-    for (int x = xstart; x != xend; x += xstep) {
-      for (int y = ystart; y != yend; y += ystep) {
+    for (int y = y1; y != y2; y += dy) {
+      for (int x = x1; x != x2; x += dx) {
         selectedPixels.push_back(sf::Vector2u(x, y));
       }
     }
   }
 
-  void updateSelectionLine() {}
+  void updateSelectionLine() {
+    // Линия: (x - x1) * kx + (y - y1) * ky = 0
+    // (x2 - x1) * kx = -(y2 - y1) * ky
+    // kx = y1 - y2
+    // ky = x2 - x1
+    long long x1 = select.x;
+    long long x2 = cursor.x;
+    long long dx = x2 < x1 ? -1 : 1;
+
+    long long y1 = select.y;
+    long long y2 = cursor.y;
+    long long dy = y2 < y1 ? -1 : 1;
+
+    long long kx = y1 - y2;
+    long long ky = x2 - x1;
+
+    long long x = x1;
+    long long y = y1;
+    while (x != x2 || y != y2) {
+      selectedPixels.push_back(sf::Vector2u(x, y));
+      long long xns[] = {x, x + dx, x + dx};
+      long long yns[] = {y + dy, y + dy, y};
+      long long bestD = 0x7fffffff;
+      long long bestX = 0;
+      long long bestY = 0;
+      for (int i = 0; i < 3; ++i) {
+        long long d = std::abs(kx * (xns[i] - x1) + ky * (yns[i] - y1));
+        if (d < bestD) {
+          bestD = d;
+          bestX = xns[i];
+          bestY = yns[i];
+        }
+      }
+      x = bestX;
+      y = bestY;
+    }
+    selectedPixels.push_back(sf::Vector2u(x2, y2));
+  }
 
  public:
   std::vector<sf::Color> palette;
