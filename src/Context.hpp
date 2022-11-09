@@ -34,7 +34,7 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   Context() : palette(128), paletteCoordinates(128) {
-    paletteCoordinates[0] = sf::Vector2f(0, 9);
+    paletteCoordinates['0'] = sf::Vector2f(0, 9);
 
     for (int i = 1; i <= 9; ++i) {
       paletteCoordinates['0' + i] = sf::Vector2f(0, i - 1);
@@ -260,7 +260,7 @@ class Context : public sf::Drawable {
       else
         indPal = key[0];
 
-      if(mode=="RGB") {
+      if(mode=="rgb") {
         if(0<=fst && fst<=255 && 0<=snd && snd<=255 && 0<=thd && thd<=255) {
           // fst - red, snd - green, thd - blue
           palette[indPal] = sf::Color(fst, snd, thd);
@@ -270,9 +270,9 @@ class Context : public sf::Drawable {
           return;
         }
 
-        float s = fst/100, v = snd/100;
+        float s = snd/100, v = thd/100;
         float C = s*v;
-        float X = C*(1-abs(fmod(fst/60.0, 2)-1)), m = v-C;
+        float X = C*(1-std::abs(fmod(fst/60.0, 2)-1)), m = v-C;
         float r,g,b;
         if(fst >= 0 && fst < 60){
           r = C,g = X,b = 0;
