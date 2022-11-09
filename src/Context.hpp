@@ -317,12 +317,16 @@ class Context : public sf::Drawable {
         if (i == prev_c) {
           currentColor = paletteRectangle;
         }
+        paletteRectangle.setOutlineThickness(1.0f);
+        paletteRectangle.setOutlineColor(sf::Color::Black);
+        target.draw(paletteRectangle);
+        paletteRectangle.setOutlineThickness(-1.0f);
         target.draw(paletteRectangle);
       }
-      currentColor.setOutlineThickness(1.0f*paletteSize/10);
+      currentColor.setOutlineThickness(2.0f);
       currentColor.setOutlineColor(sf::Color::Cyan);
       target.draw(currentColor);
-      currentColor.setOutlineThickness(-1.0f*paletteSize/10);
+      currentColor.setOutlineThickness(-2.0f);
       currentColor.setOutlineColor(sf::Color::Red);
       target.draw(currentColor);
     }
