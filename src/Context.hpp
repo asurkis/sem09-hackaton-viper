@@ -221,6 +221,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setPosition(xmin, ymin);
     backgroundRect.setSize(sf::Vector2f(xmax - xmin + 1, ymax - ymin + 1));
+    backgroundRect.setFillColor(sf::Color(0xcc00ffff));
     target.draw(backgroundRect);
 
     sprite.setPosition(xmin, ymin);
@@ -230,6 +231,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setPosition(cursor.x, cursor.y);
     backgroundRect.setSize(sf::Vector2f(1, 1));
+    backgroundRect.setFillColor(sf::Color::Magenta);
     target.draw(backgroundRect);
 
     sprite.setPosition(cursor.x, cursor.y);
