@@ -82,6 +82,8 @@ int main(int argc, char** argv) {
 
       case sf::Event::TextEntered:
         handler.handleCharacter(context, evt.text.unicode);
+
+      case sf::Event::Resized:
         window.clear(sf::Color::White);
         window.draw(context);
         window.display();
