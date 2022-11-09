@@ -103,12 +103,13 @@ class Handler {
           case ':':
             command.clear();
             currentMode = MODE_COMMAND;
-
             break;
           case 'p':
             prevMode = currentMode;
             currentMode = MODE_PICK_UP;
-
+            break;
+          case 'f':
+            context.replacePrevColor();
             break;
         }
         break;
