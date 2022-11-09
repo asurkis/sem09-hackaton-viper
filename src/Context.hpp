@@ -24,6 +24,7 @@ class Context : public sf::Drawable {
   sf::Vector2u cursor;
   sf::Vector2u select;
   std::string lastFilepath;
+  sf::Uint32 prev_c;
   std::vector<sf::Vector2f> paletteCoordinates;
   unsigned int paletteSize = 22;
   unsigned int fontSize    = 16;
@@ -35,7 +36,7 @@ class Context : public sf::Drawable {
   std::wstring_view statusLinePrefix;
   std::wstring_view statusLine;
 
-  Context() : palette(128), paletteCoordinates(128) {
+  Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);
 
     for (int i = 1; i <= 9; ++i) {
@@ -86,7 +87,7 @@ class Context : public sf::Drawable {
     paletteCoordinates['l'] = sf::Vector2f(2, 8);
     paletteCoordinates['p'] = sf::Vector2f(1, 9);
 
-    mainFont.loadFromFile("JetBrainsMonoNL-Regular.ttf");
+    mainFont.loadFromFile("../JetBrainsMono-Regular.ttf");
     image.setSmooth(false);
   }
 
@@ -137,6 +138,12 @@ class Context : public sf::Drawable {
     auto ymin = std::min(cursor.y, select.y);
     buf.create(xmax - xmin + 1, ymax - ymin + 1, palette[paletteId]);
     image.update(buf, xmin, ymin);
+
+    prev_c=paletteId;
+  }
+
+  void replacePrevColor(){
+    replaceColor(prev_c);
   }
 
   void deleteColor() {
