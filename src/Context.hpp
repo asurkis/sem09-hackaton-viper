@@ -174,13 +174,14 @@ class Context : public sf::Drawable {
 
     if (drawPalette) {
       mainSize.y -= 4 * paletteSize;
+      float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
       for (int i = 0; i < palette.size(); ++i) {
         if (!isPaletteKey(i)) {
           continue;
         }
         sf::RectangleShape paletteRectangle;
         sf::Vector2f palettePos;
-        palettePos.x = paletteCoordinates[i].y * paletteSize +
+        palettePos.x = paletteCoordinates[i].y * paletteSize + paletteShift +
                        paletteCoordinates[i].x * paletteSize / 2;
         palettePos.y = mainSize.y + paletteCoordinates[i].x * paletteSize;
         paletteRectangle.setPosition(palettePos);
@@ -221,6 +222,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setPosition(xmin, ymin);
     backgroundRect.setSize(sf::Vector2f(xmax - xmin + 1, ymax - ymin + 1));
+    backgroundRect.setFillColor(sf::Color(0xcc00ffff));
     target.draw(backgroundRect);
 
     sprite.setPosition(xmin, ymin);
@@ -230,6 +232,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setPosition(cursor.x, cursor.y);
     backgroundRect.setSize(sf::Vector2f(1, 1));
+    backgroundRect.setFillColor(sf::Color::Magenta);
     target.draw(backgroundRect);
 
     sprite.setPosition(cursor.x, cursor.y);
