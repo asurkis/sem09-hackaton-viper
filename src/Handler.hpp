@@ -13,7 +13,7 @@ sf::Uint32 constexpr ESCAPE = 27;
 
 enum Mode {
   MODE_NORMAL = 0,
-  MODE_VISUAL,
+  MODE_SELECTION,
   MODE_PRE_EDIT_ONE,
   MODE_PRE_EDIT,
   MODE_EDIT,
@@ -24,7 +24,7 @@ enum Mode {
 inline std::wstring_view contextPrefix(Mode mode) {
   switch (mode) {
     case MODE_NORMAL: return L"";
-    case MODE_VISUAL: return L"Rectangle selection";
+    case MODE_SELECTION: return L"Selection";
     case MODE_PRE_EDIT_ONE: return L"r";
     case MODE_PRE_EDIT: return L"c";
     case MODE_EDIT: return L"EDIT";
@@ -44,66 +44,43 @@ class Handler {
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
       case MODE_NORMAL:
-      case MODE_VISUAL:
+      case MODE_SELECTION:
         switch (c) {
           case ESCAPE:
             prevMode    = MODE_NORMAL;
             currentMode = MODE_NORMAL;
+            context.dropSelection();
             break;
 
           case 'h':
-
-            if(!command.empty())
+            if (!command.empty())
               context.moveCursor(-std::stoi(command), 0);
             else
               context.moveCursor(-1, 0);
-
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            } else {
-              context.updateSelection();
-            }
             command.clear();
             break;
+
           case 'j':
-            if(!command.empty())
-              context.moveCursor(0,std::stoi(command));
+            if (!command.empty())
+              context.moveCursor(0, std::stoi(command));
             else
               context.moveCursor(0, 1);
-
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            } else {
-              context.updateSelection();
-            }
             command.clear();
             break;
 
           case 'k':
-            if(!command.empty())
-              context.moveCursor(0,-std::stoi(command));
+            if (!command.empty())
+              context.moveCursor(0, -std::stoi(command));
             else
               context.moveCursor(0, -1);
-
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            } else {
-              context.updateSelection();
-            }
             command.clear();
             break;
 
           case 'l':
-            if(!command.empty())
+            if (!command.empty())
               context.moveCursor(std::stoi(command), 0);
             else
               context.moveCursor(1, 0);
-
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            } else {
-              context.updateSelection();
-            }
             command.clear();
             break;
 
@@ -119,13 +96,26 @@ class Handler {
             currentMode = MODE_PRE_EDIT;
             break;
 
-          case 'v':
-            if (currentMode == MODE_NORMAL) {
-              currentMode = MODE_VISUAL;
-            } else {
+          case 's':
+            prevMode = currentMode;
+            if (currentMode == MODE_SELECTION) {
               currentMode = MODE_NORMAL;
               context.dropSelection();
+            } else {
+              currentMode = MODE_SELECTION;
             }
+            break;
+
+          case 'a': context.swapCursor(); break;
+
+          case 'R':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_RECTANGLE);
+            break;
+
+          case 'T':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_LINE);
             break;
 
           case ':':
@@ -139,9 +129,7 @@ class Handler {
 
           case '1': case '2': case '3': case '4': case '5':
           case '6': case '7': case '8': case '9': case '0':
-            command.push_back(c);
-            break;
-
+            command.push_back(c); break;
           case 'f': context.replacePrevColor(); break;
         }
         break;
