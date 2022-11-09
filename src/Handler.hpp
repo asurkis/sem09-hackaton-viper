@@ -13,7 +13,7 @@ sf::Uint32 constexpr ESCAPE = 27;
 
 enum Mode {
   MODE_NORMAL = 0,
-  MODE_VISUAL,
+  MODE_SELECTION,
   MODE_PRE_EDIT_ONE,
   MODE_PRE_EDIT,
   MODE_EDIT,
@@ -24,7 +24,7 @@ enum Mode {
 inline std::wstring_view contextPrefix(Mode mode) {
   switch (mode) {
     case MODE_NORMAL: return L"";
-    case MODE_VISUAL: return L"Rectangle selection";
+    case MODE_SELECTION: return L"Selection";
     case MODE_PRE_EDIT_ONE: return L"r";
     case MODE_PRE_EDIT: return L"c";
     case MODE_EDIT: return L"EDIT";
@@ -44,40 +44,32 @@ class Handler {
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
       case MODE_NORMAL:
-      case MODE_VISUAL:
+      case MODE_SELECTION:
         switch (c) {
           case ESCAPE:
             prevMode    = MODE_NORMAL;
             currentMode = MODE_NORMAL;
+            context.dropSelection();
             break;
 
           case 'h':
-            context.moveCursor(-1, 0);
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            }
-            break;
-
           case 'j':
-            context.moveCursor(0, 1);
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            }
-            break;
-
           case 'k':
-            context.moveCursor(0, -1);
-            if (currentMode == MODE_NORMAL) {
+          case 'l': {
+            int step = command.empty() ? 1 : std::stoi(command);
+            command.clear();
+            switch (c) {
+              case 'h': context.moveCursor(-step, 0); break;
+              case 'j': context.moveCursor(0, step); break;
+              case 'k': context.moveCursor(0, -step); break;
+              case 'l': context.moveCursor(step, 0); break;
+            }
+            if (currentMode == MODE_SELECTION) {
+              context.updateSelection();
+            } else {
               context.dropSelection();
             }
-            break;
-
-          case 'l':
-            context.moveCursor(1, 0);
-            if (currentMode == MODE_NORMAL) {
-              context.dropSelection();
-            }
-            break;
+          } break;
 
           case 'd': context.deleteColor(); break;
 
@@ -91,13 +83,26 @@ class Handler {
             currentMode = MODE_PRE_EDIT;
             break;
 
-          case 'v':
-            if (currentMode == MODE_NORMAL) {
-              currentMode = MODE_VISUAL;
-            } else {
+          case 's':
+            prevMode = currentMode;
+            if (currentMode == MODE_SELECTION) {
               currentMode = MODE_NORMAL;
               context.dropSelection();
+            } else {
+              currentMode = MODE_SELECTION;
             }
+            break;
+
+          case 'a': context.swapCursor(); break;
+
+          case 'R':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_RECTANGLE);
+            break;
+
+          case 'T':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_LINE);
             break;
 
           case ':':
@@ -105,12 +110,22 @@ class Handler {
             currentMode = MODE_COMMAND;
             break;
           case 'p':
-            prevMode = currentMode;
+            prevMode    = currentMode;
             currentMode = MODE_PICK_UP;
             break;
-          case 'f':
-            context.replacePrevColor();
-            break;
+
+          case '1':
+          case '2':
+          case '3':
+          case '4':
+          case '5':
+          case '6':
+          case '7':
+          case '8':
+          case '9':
+          case '0': command.push_back(c); break;
+
+          case 'f': context.replacePrevColor(); break;
         }
         break;
 
