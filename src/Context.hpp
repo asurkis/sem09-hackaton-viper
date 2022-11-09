@@ -113,7 +113,6 @@ class Context : public sf::Drawable {
     }
   }
 
-  void expand(int offset, const std::wstring& direction) {}
 
   void moveCursor(int dx, int dy) {
     int cx   = (int)cursor.x + dx;
@@ -145,6 +144,95 @@ class Context : public sf::Drawable {
     buf.create(xmax - xmin + 1, ymax - ymin + 1, sf::Color(0));
     image.update(buf, xmin, ymin);
   }
+
+  void expand(int offset, const std::wstring& direction) {
+    int x = image.getSize().x;
+    int y = image.getSize().y;
+
+    if (direction == L"Bottom" ||
+        direction == L"Bot" ||
+        direction == L"Top"
+        ) {
+      y += offset;
+    } else {
+      x += offset;
+    }
+
+    sf::Image expandedImage;
+    if (x <= 0 || y <= 0) {
+      std::cout << "Oversqueeze" << std::endl;
+      return;
+    }
+
+    expandedImage.create(x, y, sf::Color::Magenta);
+    auto te = image.copyToImage();
+
+    if (0 <= offset) {
+      if (direction == L"Left") {
+        expandedImage.copy(te, offset, 0);
+      } else if (direction == L"Top") {
+        expandedImage.copy(te, 0, offset);
+      } else if (direction == L"Right" ||
+                 direction == L"Bot"   ||
+                 direction == L"Bottom") {
+        expandedImage.copy(te, 0, 0);
+      } else {
+        std::cout << "Wrong Direction" << std::endl;
+        return;
+      }
+    } else {
+      if (direction == L"Left") {
+        sf::IntRect cutRect(-offset, 0, x, y - offset);
+        expandedImage.copy(te, 0, 0, cutRect);
+      } else if (direction == L"Top") {
+        sf::IntRect cutRect(0, -offset, x - offset, y);
+        expandedImage.copy(te, 0, 0, cutRect);
+      } else if (direction == L"Right" ||
+                 direction == L"Bot"   ||
+                 direction == L"Bottom") {
+        sf::IntRect cutRect(0, 0, x, y);
+        expandedImage.copy(te, 0, 0, cutRect);
+      } else {
+        std::cout << "Wrong Direction" << std::endl;
+        return;
+      }
+    }
+    image.loadFromImage(expandedImage);
+  }
+
+  /*
+  int twice = 0;
+  void expand(int offset, const std::wstring& direction) {
+
+    if (offset < 0)
+      std::cout << offset << std::endl;
+
+
+    auto x = image.getSize().x;
+    auto y = image.getSize().y;
+
+    sf::IntRect rectSourceCut(0, 0, x, y);
+
+    if (direction == L"Bottom" || direction == L"Top") {
+      y += offset;
+    } else {
+      x += offset;
+    }
+    sf::Image expandedImage;
+    expandedImage.create(x, y, sf::Color::Magenta);
+    auto te = image.copyToImage();
+
+    if (direction == L"Left") {
+      expandedImage.copy(te, offset, 0);
+    } else if (direction == L"Top") {
+      expandedImage.copy(te, 0, offset);
+    } else if (direction == L"Bottom" || direction == L"Right") {
+      expandedImage.copy(te, 0, 0);
+    }
+
+    image.loadFromImage(expandedImage);
+  }
+  */
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
     sf::View currentView(
