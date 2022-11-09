@@ -305,9 +305,9 @@ class Context : public sf::Drawable {
     int x = image.getSize().x;
     int y = image.getSize().y;
 
-    if (direction == L"Bottom" ||
-        direction == L"Bot" ||
-        direction == L"Top"
+    if (direction == L"bottom" ||
+        direction == L"bot" ||
+        direction == L"top"
         ) {
       y += offset;
     } else {
@@ -320,32 +320,32 @@ class Context : public sf::Drawable {
       return;
     }
 
-    expandedImage.create(x, y, sf::Color::Magenta);
+    expandedImage.create(x, y, sf::Color(0));
     auto te = image.copyToImage();
 
     if (0 <= offset) {
-      if (direction == L"Left") {
+      if (direction == L"left") {
         expandedImage.copy(te, offset, 0);
-      } else if (direction == L"Top") {
+      } else if (direction == L"top") {
         expandedImage.copy(te, 0, offset);
-      } else if (direction == L"Right" ||
-                 direction == L"Bot"   ||
-                 direction == L"Bottom") {
+      } else if (direction == L"right" ||
+                 direction == L"bot"   ||
+                 direction == L"bottom") {
         expandedImage.copy(te, 0, 0);
       } else {
         std::cout << "Wrong Direction" << std::endl;
         return;
       }
     } else {
-      if (direction == L"Left") {
+      if (direction == L"left") {
         sf::IntRect cutRect(-offset, 0, x, y - offset);
         expandedImage.copy(te, 0, 0, cutRect);
-      } else if (direction == L"Top") {
+      } else if (direction == L"top") {
         sf::IntRect cutRect(0, -offset, x - offset, y);
         expandedImage.copy(te, 0, 0, cutRect);
-      } else if (direction == L"Right" ||
-                 direction == L"Bot"   ||
-                 direction == L"Bottom") {
+      } else if (direction == L"right" ||
+                 direction == L"bot"   ||
+                 direction == L"bottom") {
         sf::IntRect cutRect(0, 0, x, y);
         expandedImage.copy(te, 0, 0, cutRect);
       } else {
