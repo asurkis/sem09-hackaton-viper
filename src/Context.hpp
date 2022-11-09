@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <iostream>
@@ -162,7 +163,14 @@ class Context : public sf::Drawable {
     }
     
     sf::Sprite sprite(image);
-    sf::View imageView(sf::FloatRect(0.f, 0.f, image.getSize().x, image.getSize().y));
+    float imageMaxSize = std::max(image.getSize().x, image.getSize().y);
+    sf::View imageView;
+    if (mainSize.x > mainSize.y) {
+      imageView.setSize(sf::Vector2f(imageMaxSize * mainSize.x / mainSize.y, imageMaxSize));
+    } else {
+      imageView.setSize(sf::Vector2f(imageMaxSize, imageMaxSize *  mainSize.y / mainSize.x));
+    }
+    imageView.setCenter(sf::Vector2f(image.getSize().x / 2, image.getSize().y / 2));
     imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y/target.getSize().y));
     target.setView(imageView);
     target.draw(sprite);
