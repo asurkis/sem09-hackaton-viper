@@ -190,6 +190,7 @@ class Context : public sf::Drawable {
     if (drawPalette) {
       mainSize.y -= 4 * paletteSize;
       float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
+      sf::RectangleShape currentColor;
       for (int i = 0; i < palette.size(); ++i) {
         if (!isPaletteKey(i)) {
           continue;
@@ -202,8 +203,17 @@ class Context : public sf::Drawable {
         paletteRectangle.setPosition(palettePos);
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
+        if (i == prev_c) {
+          currentColor = paletteRectangle;
+        }
         target.draw(paletteRectangle);
       }
+      currentColor.setOutlineThickness(1.0f*paletteSize/10);
+      currentColor.setOutlineColor(sf::Color::Cyan);
+      target.draw(currentColor);
+      currentColor.setOutlineThickness(-1.0f*paletteSize/10);
+      currentColor.setOutlineColor(sf::Color::Red);
+      target.draw(currentColor);
     }
 
     sf::View imageView;
