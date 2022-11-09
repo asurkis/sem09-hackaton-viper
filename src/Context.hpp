@@ -173,13 +173,14 @@ class Context : public sf::Drawable {
 
     if (drawPalette) {
       mainSize.y -= 4 * paletteSize;
+      float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
       for (int i = 0; i < palette.size(); ++i) {
         if (!isPaletteKey(i)) {
           continue;
         }
         sf::RectangleShape paletteRectangle;
         sf::Vector2f palettePos;
-        palettePos.x = paletteCoordinates[i].y * paletteSize +
+        palettePos.x = paletteCoordinates[i].y * paletteSize + paletteShift +
                        paletteCoordinates[i].x * paletteSize / 2;
         palettePos.y = mainSize.y + paletteCoordinates[i].x * paletteSize;
         paletteRectangle.setPosition(palettePos);
