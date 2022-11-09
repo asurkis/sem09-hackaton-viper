@@ -122,43 +122,9 @@ class Context : public sf::Drawable {
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
-    sf::Sprite sprite(image);
+    sf::View currentView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
+    target.setView(currentView);
 
-    sf::View imageView(sf::FloatRect(0.f, 0.f, image.getSize().x, image.getSize().y));
-//    imageView.setCenter(cursor.x, cursor.y);
-    imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 0.8f));
-    target.setView(imageView);
-    target.draw(sprite);
-
-    sf::RectangleShape wrapAround;
-    wrapAround.setPosition(sf::Vector2f(cursor));
-    wrapAround.setSize(sf::Vector2f(1, 1));
-    wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
-    wrapAround.setOutlineColor(sf::Color::Cyan);
-    wrapAround.setOutlineThickness(0.1f);
-    target.draw(wrapAround);
-    wrapAround.setOutlineColor(sf::Color::Red);
-    wrapAround.setOutlineThickness(-0.1f);
-    target.draw(wrapAround);
-
-    sf::View paletteView(sf::FloatRect(0.f, 0.f, target.getSize().x, target.getSize().y));
-    paletteView.setViewport(sf::FloatRect(0.f, 0.8f, 1.f, 1.f));
-    target.setView(paletteView);
-
-    if (drawPalette) {
-      for (int i = 0; i < palette.size(); ++i) {
-        sf::RectangleShape paletteRectangle;
-        paletteRectangle.setPosition(
-            sf::Vector2f(paletteCoordinates[i].y * paletteSize,
-                         paletteCoordinates[i].x * paletteSize));
-        paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
-        paletteRectangle.setFillColor(palette[i]);
-        target.draw(paletteRectangle);
-      }
-    }
-
-    target.setView(target.getDefaultView());
-    
     sf::Text text;
     text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
     text.setFont(mainFont);
@@ -178,6 +144,37 @@ class Context : public sf::Drawable {
 
     target.draw(backgroundRect);
     target.draw(text);
+
+    mainSize.y -= 4 * paletteSize;
+
+    if (drawPalette) {
+      for (int i = 0; i < palette.size(); ++i) {
+        sf::RectangleShape paletteRectangle;
+        paletteRectangle.setPosition(
+            sf::Vector2f(paletteCoordinates[i].y * paletteSize,
+                         mainSize.y + paletteCoordinates[i].x * paletteSize));
+        paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
+        paletteRectangle.setFillColor(palette[i]);
+        target.draw(paletteRectangle);
+      }
+    }
+    
+    sf::Sprite sprite(image);
+    sf::View imageView(sf::FloatRect(0.f, 0.f, image.getSize().x, image.getSize().y));
+    imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y/target.getSize().y));
+    target.setView(imageView);
+    target.draw(sprite);
+
+    sf::RectangleShape wrapAround;
+    wrapAround.setPosition(sf::Vector2f(cursor));
+    wrapAround.setSize(sf::Vector2f(1, 1));
+    wrapAround.setFillColor(sf::Color(0, 0, 0, 0));
+    wrapAround.setOutlineColor(sf::Color::Cyan);
+    wrapAround.setOutlineThickness(0.1f);
+    target.draw(wrapAround);
+    wrapAround.setOutlineColor(sf::Color::Red);
+    wrapAround.setOutlineThickness(-0.1f);
+    target.draw(wrapAround);
   }
 
   void newFile(std::pair<int32_t,int32_t> size){
