@@ -146,9 +146,9 @@ class Context : public sf::Drawable {
     target.draw(backgroundRect);
     target.draw(text);
 
-    mainSize.y -= 4 * paletteSize;
 
     if (drawPalette) {
+      mainSize.y -= 4 * paletteSize;
       for (int i = 0; i < palette.size(); ++i) {
         sf::RectangleShape paletteRectangle;
         sf::Vector2f palettePos;
@@ -165,12 +165,15 @@ class Context : public sf::Drawable {
     sf::Sprite sprite(image);
     float imageMaxSize = std::max(image.getSize().x, image.getSize().y);
     sf::View imageView;
-    if (mainSize.x > mainSize.y) {
-      imageView.setSize(sf::Vector2f(imageMaxSize * mainSize.x / mainSize.y, imageMaxSize));
-    } else {
-      imageView.setSize(sf::Vector2f(imageMaxSize, imageMaxSize *  mainSize.y / mainSize.x));
+    sf::Vector2f viewSize(image.getSize().x, 0.f);
+    viewSize.y =  viewSize.x * mainSize.y / mainSize.x;
+    if (viewSize.y < image.getSize().y) {
+      float tmp = image.getSize().y / viewSize.y;
+      viewSize.y *= tmp;
+      viewSize.x *= tmp;
     }
-    imageView.setCenter(sf::Vector2f(image.getSize().x / 2, image.getSize().y / 2));
+    imageView.setSize(viewSize);
+    imageView.setCenter(sf::Vector2f(image.getSize().x, image.getSize().y) / 2.0f);
     imageView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y/target.getSize().y));
     target.setView(imageView);
     target.draw(sprite);
