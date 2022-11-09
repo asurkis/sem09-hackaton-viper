@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string_view>
 #include <vector>
+#include <cmath>
 
 inline bool isPaletteKey(sf::Uint32 c) {
   return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z');
@@ -83,7 +84,7 @@ class Context : public sf::Drawable {
     paletteCoordinates['l'] = sf::Vector2f(2, 8);
     paletteCoordinates['p'] = sf::Vector2f(1, 9);
 
-    mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
+    mainFont.loadFromFile("JetBrainsMonoNL-Regular.ttf");
     image.setSmooth(false);
   }
 
@@ -248,14 +249,49 @@ class Context : public sf::Drawable {
     target.draw(wrapAround);
   }
 
-  void putColor(std::string const& key,int32_t red, int32_t green, int32_t blue){
+  void putColor(std::string const& key,std::string const& mode, int32_t fst, int32_t snd, int32_t thd){
       int indPal=0;
-      if ('0' <= key[0] && key[0] <= '9')
-          indPal=key[0]-'0';
-      else
-          indPal=10+key[0]-'a';
 
-      palette[indPal]=sf::Color(red, green, blue);
+      if ('0' <= key[0] && key[0] <= '9')
+        indPal = key[0];
+      else
+        indPal = key[0];
+
+      if(mode=="RGB") {
+        if(0<=fst && fst<=255 && 0<=snd && snd<=255 && 0<=thd && thd<=255) {
+          // fst - red, snd - green, thd - blue
+          palette[indPal] = sf::Color(fst, snd, thd);
+        }
+      }else{
+        if(fst>360 || fst<0 || snd>100 || snd<0 || thd>100 || thd<0){
+          return;
+        }
+
+        float s = fst/100, v = snd/100;
+        float C = s*v;
+        float X = C*(1-abs(fmod(fst/60.0, 2)-1)), m = v-C;
+        float r,g,b;
+        if(fst >= 0 && fst < 60){
+          r = C,g = X,b = 0;
+        }
+        else if(fst >= 60 && fst < 120){
+          r = X,g = C,b = 0;
+        }
+        else if(fst >= 120 && fst < 180){
+          r = 0,g = C,b = X;
+        }
+        else if(fst >= 180 && fst < 240){
+          r = 0,g = X,b = C;
+        }
+        else if(fst >= 240 && fst < 300){
+          r = X,g = 0,b = C;
+        }
+        else{
+          r = C,g = 0,b = X;
+        }
+        int R = (r+m)*255,G = (g+m)*255, B=(b+m)*255;
+        palette[indPal] = sf::Color(R, G, B);
+      }
   }
 };
 

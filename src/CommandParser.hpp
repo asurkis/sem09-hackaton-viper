@@ -62,10 +62,10 @@ class CommandParser {
         break;
       case PAL:
         //key_type_color_color
-        if(commandArgs.size()==4){
-            if(commandArgs[0].size()==1){
-              int32_t red =std::stoi(commandArgs[1]), green =std::stoi(commandArgs[2]), blue=std::stoi(commandArgs[3]);
-              context.putColor(ws2s(commandArgs[0]), red, green, blue);
+        if(commandArgs.size()==5){
+            if(commandArgs[0].size()==1 && (commandArgs[1]==L"RGB" || commandArgs[1]==L"HSV")){
+              int32_t fst =std::stoi(commandArgs[2]), snd =std::stoi(commandArgs[3]), thd=std::stoi(commandArgs[4]);
+              context.putColor(ws2s(commandArgs[0]),ws2s(commandArgs[1]), fst, snd, thd);
             }
         }
 
