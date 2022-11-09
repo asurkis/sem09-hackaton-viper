@@ -105,10 +105,16 @@ class Handler {
             context.setSelectionType(ST_LINE);
             break;
 
+          case 'm':
+            currentMode = MODE_NORMAL;
+            context.selectSameColor();
+            break;
+
           case ':':
             command.clear();
             currentMode = MODE_COMMAND;
             break;
+
           case 'p':
             prevMode    = currentMode;
             currentMode = MODE_PICK_UP;
