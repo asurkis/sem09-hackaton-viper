@@ -460,9 +460,8 @@ class Context : public sf::Drawable {
 
       sf::RectangleShape paletteBackground;
       paletteBackground.setPosition(0.0f, mainSize.y);
-      paletteBackground.setSize(sf::Vector2f(target.getSize().x,
-                                             paletteSize * 4 + 
-                                             minorShift * 2));
+      paletteBackground.setSize(
+          sf::Vector2f(target.getSize().x, paletteSize * 4 + minorShift * 2));
       paletteBackground.setFillColor(sf::Color(0x1c2e4aff));
       target.draw(paletteBackground);
 
@@ -484,7 +483,7 @@ class Context : public sf::Drawable {
         if (i == prev_c) {
           currentColor = paletteRectangle;
         }
-        
+
         paletteRectangle.setOutlineThickness(1.0f);
         paletteRectangle.setOutlineColor(sf::Color::Black);
         target.draw(paletteRectangle);
@@ -494,8 +493,8 @@ class Context : public sf::Drawable {
         if (i == 'f' || i == 'j') {
           sf::RectangleShape serif;
           serif.setSize(sf::Vector2f(paletteSize / 3, 2));
-          serif.setPosition(palettePos + 
-              sf::Vector2f(paletteSize / 3, 2 * paletteSize / 3));
+          serif.setPosition(palettePos +
+                            sf::Vector2f(paletteSize / 3, 2 * paletteSize / 3));
           serif.setFillColor(sf::Color::Black);
           target.draw(serif);
         }
