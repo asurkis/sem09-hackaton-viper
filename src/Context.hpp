@@ -499,39 +499,41 @@ class Context : public sf::Drawable {
       target.draw(sprite);
     }
 
-    // Grid
     target.setView(currentView);
 
     sf::Vector2f imageTopLeftPos(
         (mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
         (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
-    sf::RectangleShape imageFrame;
-    imageFrame.setPosition(imageTopLeftPos);
-    imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2,
-                                    pixelSize * image.getSize().y + 2));
-    imageFrame.setFillColor(sf::Color::Transparent);
-    imageFrame.setOutlineThickness(-2.0f);
-    imageFrame.setOutlineColor(sf::Color::Black);
-    target.draw(imageFrame);
+    // Grid
+    if (gridSize > 0) {
+      sf::RectangleShape imageFrame;
+      imageFrame.setPosition(imageTopLeftPos);
+      imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2,
+                                      pixelSize * image.getSize().y + 2));
+      imageFrame.setFillColor(sf::Color::Transparent);
+      imageFrame.setOutlineThickness(-2.0f);
+      imageFrame.setOutlineColor(sf::Color::Black);
+      target.draw(imageFrame);
 
-    sf::Vector2f currentLinePos = imageTopLeftPos;
-    for (unsigned int i = 0; i <= image.getSize().y; i += gridSize) {
-      sf::RectangleShape horizontalLine;
-      horizontalLine.setPosition(currentLinePos);
-      horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
-      horizontalLine.setFillColor(sf::Color::Black);
-      target.draw(horizontalLine);
-      currentLinePos.y += pixelSize * gridSize;
-    }
+      sf::Vector2f currentLinePos = imageTopLeftPos;
+      for (unsigned int i = 0; i <= image.getSize().y; i += gridSize) {
+        sf::RectangleShape horizontalLine;
+        horizontalLine.setPosition(currentLinePos);
+        horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
+        horizontalLine.setFillColor(sf::Color::Black);
+        target.draw(horizontalLine);
+        currentLinePos.y += pixelSize * gridSize;
+      }
 
-    currentLinePos = imageTopLeftPos;
-    for (unsigned int i = 0; i <= image.getSize().x; i += gridSize) {
-      sf::RectangleShape verticalLine;
-      verticalLine.setPosition(currentLinePos);
-      verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
-      verticalLine.setFillColor(sf::Color::Black);
-      target.draw(verticalLine);
-      currentLinePos.x += pixelSize * gridSize;
+      currentLinePos = imageTopLeftPos;
+      for (unsigned int i = 0; i <= image.getSize().x; i += gridSize) {
+        sf::RectangleShape verticalLine;
+        verticalLine.setPosition(currentLinePos);
+        verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
+        verticalLine.setFillColor(sf::Color::Black);
+        target.draw(verticalLine);
+        currentLinePos.x += pixelSize * gridSize;
+      }
     }
 
     // Cursor
