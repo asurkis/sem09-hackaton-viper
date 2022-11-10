@@ -65,7 +65,6 @@ class Context : public sf::Drawable {
   unsigned int gridSize       = 4;
   unsigned int fontSize       = 16;
   unsigned int previewSize    = 8;
-  bool drawPalette            = true;
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
 
@@ -167,12 +166,16 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   void rescalePalette(const double paletteScale) {
-    paletteSize *= paletteScale;
+    paletteSize = paletteScale;
   }
 
   void setFontSize(const double newFontSize) { fontSize = newFontSize; }
 
   void setGridStep(const unsigned newGridStep) { gridSize = newGridStep; }
+
+  void setPreviewScale(const unsigned newPreviewScale) {
+    previewSize = newPreviewScale;
+  }
 
   Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);
@@ -443,11 +446,13 @@ class Context : public sf::Drawable {
     backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
     backgroundRect.setFillColor(sf::Color(0xcccc00ff));
 
-    target.draw(backgroundRect);
-    target.draw(text);
+    if (fontSize > 0) {
+      target.draw(backgroundRect);
+      target.draw(text);
+    }
 
     // Palette
-    if (drawPalette) {
+    if (paletteSize > 0) {
       unsigned int minorShift = 4;
       mainSize.y -= 4 * paletteSize + minorShift * 2;
       float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
@@ -523,39 +528,45 @@ class Context : public sf::Drawable {
       target.draw(sprite);
     }
 
-    // Grid
+    sprite.setTextureRect(
+        sf::IntRect(0, 0, image.getSize().x, image.getSize().y));
+
     target.setView(currentView);
 
     sf::Vector2f imageTopLeftPos(
         (mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
         (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
-    sf::RectangleShape imageFrame;
-    imageFrame.setPosition(imageTopLeftPos);
-    imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2,
-                                    pixelSize * image.getSize().y + 2));
-    imageFrame.setFillColor(sf::Color::Transparent);
-    imageFrame.setOutlineThickness(-2.0f);
-    imageFrame.setOutlineColor(sf::Color::Black);
-    target.draw(imageFrame);
 
-    sf::Vector2f currentLinePos = imageTopLeftPos;
-    for (unsigned int i = 0; i <= image.getSize().y; i += gridSize) {
-      sf::RectangleShape horizontalLine;
-      horizontalLine.setPosition(currentLinePos);
-      horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
-      horizontalLine.setFillColor(sf::Color::Black);
-      target.draw(horizontalLine);
-      currentLinePos.y += pixelSize * gridSize;
-    }
+    // Grid
+    if (gridSize > 0) {
+      sf::RectangleShape imageFrame;
+      imageFrame.setPosition(imageTopLeftPos);
+      imageFrame.setSize(sf::Vector2f(pixelSize * image.getSize().x + 2,
+                                      pixelSize * image.getSize().y + 2));
+      imageFrame.setFillColor(sf::Color::Transparent);
+      imageFrame.setOutlineThickness(-2.0f);
+      imageFrame.setOutlineColor(sf::Color::Black);
+      target.draw(imageFrame);
 
-    currentLinePos = imageTopLeftPos;
-    for (unsigned int i = 0; i <= image.getSize().x; i += gridSize) {
-      sf::RectangleShape verticalLine;
-      verticalLine.setPosition(currentLinePos);
-      verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
-      verticalLine.setFillColor(sf::Color::Black);
-      target.draw(verticalLine);
-      currentLinePos.x += pixelSize * gridSize;
+      sf::Vector2f currentLinePos = imageTopLeftPos;
+      for (unsigned int i = 0; i <= image.getSize().y; i += gridSize) {
+        sf::RectangleShape horizontalLine;
+        horizontalLine.setPosition(currentLinePos);
+        horizontalLine.setSize(sf::Vector2f(pixelSize * image.getSize().x, 2));
+        horizontalLine.setFillColor(sf::Color::Black);
+        target.draw(horizontalLine);
+        currentLinePos.y += pixelSize * gridSize;
+      }
+
+      currentLinePos = imageTopLeftPos;
+      for (unsigned int i = 0; i <= image.getSize().x; i += gridSize) {
+        sf::RectangleShape verticalLine;
+        verticalLine.setPosition(currentLinePos);
+        verticalLine.setSize(sf::Vector2f(2, pixelSize * image.getSize().y));
+        verticalLine.setFillColor(sf::Color::Black);
+        target.draw(verticalLine);
+        currentLinePos.x += pixelSize * gridSize;
+      }
     }
 
     // Cursor
@@ -573,29 +584,31 @@ class Context : public sf::Drawable {
     target.draw(wrapAround);
 
     // Preview
-    sf::Vector2f previewRectSize(image.getSize().x * previewSize,
-                                 image.getSize().y * previewSize);
-    sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
-                            2.0f);
+    if (previewSize > 0) {
+      sf::Vector2f previewRectSize(image.getSize().x * previewSize,
+                                   image.getSize().y * previewSize);
+      sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
+                              2.0f);
 
-    sf::View previewView(sf::FloatRect(
-        0.0f, 0.0f, target.getSize().x,
-        (float)target.getSize().y * mainSize.y / target.getSize().y));
-    previewView.setViewport(
-        sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
-    target.setView(previewView);
+      sf::View previewView(sf::FloatRect(
+          0.0f, 0.0f, target.getSize().x,
+          (float)target.getSize().y * mainSize.y / target.getSize().y));
+      previewView.setViewport(
+          sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
+      target.setView(previewView);
 
-    sf::RectangleShape previewBackground;
-    previewBackground.setPosition(previewPos);
-    previewBackground.setSize(previewRectSize);
-    previewBackground.setFillColor(sf::Color::Magenta);
-    previewBackground.setOutlineThickness(2.0f);
-    previewBackground.setOutlineColor(sf::Color::Black);
-    target.draw(previewBackground);
+      sf::RectangleShape previewBackground;
+      previewBackground.setPosition(previewPos);
+      previewBackground.setSize(previewRectSize);
+      previewBackground.setFillColor(sf::Color::Magenta);
+      previewBackground.setOutlineThickness(2.0f);
+      previewBackground.setOutlineColor(sf::Color::Black);
+      target.draw(previewBackground);
 
-    sprite.setPosition(previewPos);
-    sprite.setScale(previewSize, previewSize);
-    target.draw(sprite);
+      sprite.setPosition(previewPos);
+      sprite.setScale(previewSize, previewSize);
+      target.draw(sprite);
+    }
   }
 };
 
