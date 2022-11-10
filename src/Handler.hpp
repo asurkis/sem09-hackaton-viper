@@ -44,7 +44,9 @@ class Handler {
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
       case MODE_NORMAL:
-      case MODE_SELECTION:
+      case MODE_SELECTION: {
+        if((c<'0' || c>'9') && c!='j' && c!='k' && c!='h' && c!='l')
+          command.clear();
         switch (c) {
           case ESCAPE:
             prevMode    = MODE_NORMAL;
@@ -133,6 +135,7 @@ class Handler {
 
           case 'f': context.replacePrevColor(); break;
         }
+      }
         break;
 
       case MODE_PRE_EDIT_ONE:
