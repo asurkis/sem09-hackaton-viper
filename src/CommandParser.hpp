@@ -55,7 +55,10 @@ class CommandParser {
     setCommandNameArgs(commandString);
     auto cur_command = parseCommand(commandString);
     switch (cur_command) {
-      case QUIT: context.quit(); break;
+      case QUIT:
+        context.quit();
+        break;
+
       case SAVE_FILE:
         if (commandArgs.size() == 1) {
           context.saveFile(ws2s(commandArgs[0]));
@@ -63,14 +66,17 @@ class CommandParser {
           context.saveFile();
         }
         break;
+
       case LOAD_FILE:
         if (commandArgs.size() == 1) {
           context.loadFile(ws2s(commandArgs[0]));
         }
         break;
+
       case EXPAND:
         context.expand(commandArgs[0], std::stoi(commandArgs[1]));
         break;
+
       case NEW_FILE:
         // if given
         if (commandArgs.size() == 2) {
@@ -81,6 +87,7 @@ class CommandParser {
           }
         }
         break;
+
       case PAL:
         // key_type_color_color
         if (commandArgs.size() == 5) {
@@ -98,6 +105,8 @@ class CommandParser {
             }
           }
         }
+        break;
+
       case SET:
         if (commandArgs[0] == L"paletteScale") {
           context.rescalePalette(std::stoi(ws2s(commandArgs[1])));
