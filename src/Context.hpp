@@ -63,6 +63,7 @@ class Context : public sf::Drawable {
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
 
+
   void updateSelectionRectangle() {
     selectedPixels.clear();
     int x1 = select.x;
@@ -130,6 +131,18 @@ class Context : public sf::Drawable {
   std::vector<sf::Color> palette;
   std::wstring_view statusLinePrefix;
   std::wstring_view statusLine;
+
+  void rescalePalette(const double paletteScale) {
+    paletteSize *= paletteScale;
+  }
+
+  void setFontSize(const double newFontSize) {
+    fontSize = newFontSize;
+  }
+
+  void setGridStep(const unsigned newGridStep) {
+    gridSize = newGridStep;
+  }
 
   Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);

@@ -21,6 +21,7 @@ enum Commands {
   EXPAND,
   PAL,
   SHADING,
+  SET
 };
 
 class CommandParser {
@@ -31,7 +32,8 @@ class CommandParser {
       {L"new",    NEW_FILE },
       {L"expand", EXPAND   },
       {L"pal",    PAL      },
-      {L"r",      SHADING  }
+      {L"r",      SHADING  },
+      {L"set", SET}
   };
   std::wstring commandName;
   std::vector<std::wstring> commandArgs;
@@ -51,14 +53,14 @@ class CommandParser {
         if (commandArgs.size() == 1)
           context.loadFile(ws2s(commandArgs[0]));
         break;
-      case EXPAND: context.expand(commandArgs[0], stoi(commandArgs[1])); break;
+      case EXPAND: context.expand(commandArgs[0], std::stoi(commandArgs[1])); break;
       case NEW_FILE:
         // if given
         if (commandArgs.size() == 2) {
           int32_t width  = std::stoi(commandArgs[0]),
-                  heigth = std::stoi(commandArgs[1]);
-          if (width > 0 && heigth > 0)
-            context.newFile(width, heigth);
+                  height = std::stoi(commandArgs[1]);
+          if (width > 0 && height > 0)
+            context.newFile(width, height);
         }
         break;
       case PAL:
@@ -78,6 +80,17 @@ class CommandParser {
             }
           }
         }
+      case SET:
+        if (commandArgs[0] == L"paletteScale") {
+          context.rescalePalette(std::atof(ws2s(commandArgs[1]).c_str()));
+        } else if (commandArgs[0] == L"fontSize") {
+          context.setFontSize(std::stoi(commandArgs[1]));
+        } else if (commandArgs[0] == L"gridStep") {
+          context.setGridStep(std::stoi(commandArgs[1]));
+        } else if (commandArgs[0] == L"previewScale") {
+          std::cout << "WHAT";
+        }
+        break;
     }
     return 0;
   }
