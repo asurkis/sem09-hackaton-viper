@@ -48,7 +48,8 @@ class Context : public sf::Drawable {
   std::vector<sf::Vector2f> paletteCoordinates;
   std::vector<std::pair<std::size_t, std::size_t>> selectedPixels;
   std::string lastFilepath;
-  sf::Texture image;
+  sf::Texture texture;
+  sf::Image image;
   sf::Font mainFont;
   sf::Vector2u cursor;
   sf::Vector2u select;
@@ -174,7 +175,7 @@ class Context : public sf::Drawable {
     paletteCoordinates['p'] = sf::Vector2f(1, 9);
 
     mainFont.loadFromFile("JetBrainsMono-Regular.ttf");
-    image.setSmooth(false);
+    texture.setSmooth(false);
   }
 
   void quit() { quitting = true; }
@@ -182,7 +183,8 @@ class Context : public sf::Drawable {
 
   void loadFile(std::string const& filepath) {
     lastFilepath = filepath;
-    image.loadFromFile(filepath);
+    image.loadFromFile(lastFilepath);
+    texture.loadFromImage(image);
 
     cursor = sf::Vector2u();
     select = sf::Vector2u();
@@ -190,9 +192,8 @@ class Context : public sf::Drawable {
   }
 
   void newFile(int width, int height) {
-    sf::Image buf;
-    buf.create(width, height, sf::Color(0));
-    image.loadFromImage(buf);
+    image.create(width, height, sf::Color(0));
+    texture.loadFromImage(image);
     lastFilepath.clear();
 
     cursor = sf::Vector2u();
@@ -206,8 +207,7 @@ class Context : public sf::Drawable {
     }
 
     if (!lastFilepath.empty()) {
-      sf::Image buf = image.copyToImage();
-      buf.saveToFile(lastFilepath);
+      image.saveToFile(lastFilepath);
     }
   }
 
@@ -238,9 +238,8 @@ class Context : public sf::Drawable {
 
   void selectSameColor() {
     selectedPixels.clear();
-    auto img = image.copyToImage();
-    int w    = img.getSize().x;
-    int h    = img.getSize().y;
+    int w = image.getSize().x;
+    int h = image.getSize().y;
     std::vector<bool> visited(w * h);
     std::queue<std::pair<int, int>> queue;
     queue.push({cursor.x, cursor.y});
@@ -257,8 +256,8 @@ class Context : public sf::Drawable {
           int nx = x + dx;
           int ny = y + dy;
           if (0 <= nx && nx < w && 0 <= ny && ny < h &&
-              (img.getPixel(nx, ny).toInteger() | 0xff) ==
-                  (img.getPixel(cursor.x, cursor.y).toInteger() | 0xff)) {
+              (image.getPixel(nx, ny).toInteger() | 0xff) ==
+                  (image.getPixel(cursor.x, cursor.y).toInteger() | 0xff)) {
             queue.push({nx, ny});
           }
         }
@@ -275,8 +274,9 @@ class Context : public sf::Drawable {
     sf::Image buf;
     buf.create(1, 1, color);
     for (auto const& [x, y] : selectedPixels) {
-      image.update(buf, x, y);
+      image.setPixel(x, y, color);
     }
+    texture.loadFromImage(image);
   }
 
   void replaceColor(int paletteId) {
@@ -295,7 +295,7 @@ class Context : public sf::Drawable {
   }
 
   void pickUpColor(sf::Uint32 c) {
-    sf::Color currentColor = image.copyToImage().getPixel(cursor.x, cursor.y);
+    sf::Color currentColor = image.getPixel(cursor.x, cursor.y);
     currentColor.a         = 255;
     changePalette(c, currentColor);
   }
@@ -327,15 +327,13 @@ class Context : public sf::Drawable {
     select.y = std::max(0, std::min(sizeY - 1, (int)select.y));
 
     expandedImage.create(sizeX, sizeY, sf::Color(0));
-    auto te = image.copyToImage();
-
     if (0 <= offset) {
       if (direction == L"left") {
-        expandedImage.copy(te, offset, 0);
+        expandedImage.copy(image, offset, 0);
       } else if (direction == L"up") {
-        expandedImage.copy(te, 0, offset);
+        expandedImage.copy(image, 0, offset);
       } else if (direction == L"right" || direction == L"down") {
-        expandedImage.copy(te, 0, 0);
+        expandedImage.copy(image, 0, 0);
       } else {
         std::cout << "Wrong Direction" << std::endl;
         return;
@@ -351,10 +349,11 @@ class Context : public sf::Drawable {
         std::cout << "Wrong Direction" << std::endl;
         return;
       }
-      expandedImage.copy(te, 0, 0, srcRect);
+      expandedImage.copy(image, 0, 0, srcRect);
     }
 
-    image.loadFromImage(expandedImage);
+    image = expandedImage;
+    texture.loadFromImage(image);
   }
 
   void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
@@ -442,7 +441,7 @@ class Context : public sf::Drawable {
     backgroundRect.setFillColor(sf::Color::Magenta);
     target.draw(backgroundRect);
 
-    sf::Sprite sprite(image);
+    sf::Sprite sprite(texture);
     target.draw(sprite);
 
     backgroundRect.setSize(sf::Vector2f(1, 1));
