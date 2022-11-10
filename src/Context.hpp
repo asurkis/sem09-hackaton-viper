@@ -69,7 +69,6 @@ class Context : public sf::Drawable {
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
 
-
   void updateSelectionRectangle() {
     selectedPixels.clear();
     int x1 = select.x;
@@ -171,13 +170,9 @@ class Context : public sf::Drawable {
     paletteSize *= paletteScale;
   }
 
-  void setFontSize(const double newFontSize) {
-    fontSize = newFontSize;
-  }
+  void setFontSize(const double newFontSize) { fontSize = newFontSize; }
 
-  void setGridStep(const unsigned newGridStep) {
-    gridSize = newGridStep;
-  }
+  void setGridStep(const unsigned newGridStep) { gridSize = newGridStep; }
 
   Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);
@@ -315,8 +310,7 @@ class Context : public sf::Drawable {
           int nx = x + dx;
           int ny = y + dy;
           if (0 <= nx && nx < w && 0 <= ny && ny < h &&
-              (image.getPixel(nx, ny).toInteger() | 0xff) ==
-                  (image.getPixel(cursor.x, cursor.y).toInteger() | 0xff)) {
+              image.getPixel(nx, ny) == image.getPixel(cursor.x, cursor.y)) {
             queue.push({nx, ny});
           }
         }
@@ -580,11 +574,13 @@ class Context : public sf::Drawable {
 
     // Preview
     sf::Vector2f previewRectSize(image.getSize().x * previewSize,
-                             image.getSize().y * previewSize);
+                                 image.getSize().y * previewSize);
     sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
                             2.0f);
 
-    sf::View previewView(sf::FloatRect(0.0f, 0.0f, target.getSize().x, (float) target.getSize().y * mainSize.y / target.getSize().y));
+    sf::View previewView(sf::FloatRect(
+        0.0f, 0.0f, target.getSize().x,
+        (float)target.getSize().y * mainSize.y / target.getSize().y));
     previewView.setViewport(
         sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
     target.setView(previewView);
@@ -600,7 +596,6 @@ class Context : public sf::Drawable {
     sprite.setPosition(previewPos);
     sprite.setScale(previewSize, previewSize);
     target.draw(sprite);
-
   }
 };
 
