@@ -44,69 +44,54 @@ class Handler {
   void handleCharacter(Context& context, sf::Uint32 c) {
     switch (currentMode) {
       case MODE_NORMAL:
-      case MODE_SELECTION:
+      case MODE_SELECTION: {
+        if((c<'0' || c>'9') && c!='h' && c!='j' && c!='k' && c!='l')
+          command.clear();
+
         switch (c) {
-
           case ESCAPE:
-          case 'd':
+            prevMode    = MODE_NORMAL;
+            currentMode = MODE_NORMAL;
+            context.dropSelection();
+            break;
+          case 'd': context.deleteColor(); break;
           case 'r':
+            prevMode    = currentMode;
+            currentMode = MODE_PRE_EDIT_ONE;
+            break;
+
           case 'c':
+            prevMode    = currentMode;
+            currentMode = MODE_PRE_EDIT;
+            break;
           case 's':
-          case 'a':
-          case 'R':
-          case 'T':
-          case 'm':
-          case 'p':
-          case 'f':
-          case ':': {
-            command.clear();
-            switch (c) {
-              case ESCAPE:
-                prevMode    = MODE_NORMAL;
-                currentMode = MODE_NORMAL;
-                context.dropSelection();
-                break;
-              case 'd': context.deleteColor(); break;
-              case 'r':
-                prevMode    = currentMode;
-                currentMode = MODE_PRE_EDIT_ONE;
-                break;
-
-              case 'c':
-                prevMode    = currentMode;
-                currentMode = MODE_PRE_EDIT;
-                break;
-              case 's':
-                prevMode = currentMode;
-                if (currentMode == MODE_SELECTION) {
-                  currentMode = MODE_NORMAL;
-                  context.dropSelection();
-                } else {
-                  currentMode = MODE_SELECTION;
-                }
-                break;
-              case 'a': context.swapCursor(); break;
-              case 'R':
-                currentMode = MODE_SELECTION;
-                context.setSelectionType(ST_RECTANGLE);
-                break;
-              case 'T':
-                currentMode = MODE_SELECTION;
-                context.setSelectionType(ST_LINE);
-                break;
-              case 'm':
-                currentMode = MODE_NORMAL;
-                context.selectSameColor();
-                break;
-              case 'p':
-                prevMode    = currentMode;
-                currentMode = MODE_PICK_UP;
-                break;
-              case 'f': context.replacePrevColor(); break;
-              case ':': currentMode = MODE_COMMAND; break;
+            prevMode = currentMode;
+            if (currentMode == MODE_SELECTION) {
+              currentMode = MODE_NORMAL;
+              context.dropSelection();
+            } else {
+              currentMode = MODE_SELECTION;
             }
-          }  break;
-
+            break;
+          case 'a': context.swapCursor(); break;
+          case 'R':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_RECTANGLE);
+            break;
+          case 'T':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_LINE);
+            break;
+          case 'm':
+            currentMode = MODE_NORMAL;
+            context.selectSameColor();
+            break;
+          case 'p':
+            prevMode    = currentMode;
+            currentMode = MODE_PICK_UP;
+            break;
+          case 'f': context.replacePrevColor(); break;
+          case ':': currentMode = MODE_COMMAND; break;
           case 'h':
           case 'j':
           case 'k':
@@ -136,8 +121,8 @@ class Handler {
           case '8':
           case '9':
           case '0': command.push_back(c); break;
-
         }
+      }
         break;
 
       case MODE_PRE_EDIT_ONE:

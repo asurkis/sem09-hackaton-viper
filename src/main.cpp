@@ -5,7 +5,8 @@
 #include "Handler.hpp"
 
 int main(int argc, char** argv) {
-  sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+  std::string title="My window";
+  sf::RenderWindow window(sf::VideoMode(800, 600), title);
 
   Handler handler;
   Context context;
