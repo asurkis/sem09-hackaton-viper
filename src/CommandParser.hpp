@@ -38,31 +38,56 @@ class CommandParser {
   std::wstring commandName;
   std::vector<std::wstring> commandArgs;
 
+  std::wstring s2ws(const std::string& str) const {
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.from_bytes(str);
+  }
+
+  std::string ws2s(const std::wstring& wstr) const {
+    using convert_typeX = std::codecvt_utf8<wchar_t>;
+    std::wstring_convert<convert_typeX, wchar_t> converterX;
+    return converterX.to_bytes(wstr);
+  }
+
  public:
   int handleCommand(const std::wstring& commandString, Context& context) {
+    setCommandNameArgs(commandString);
     auto cur_command = parseCommand(commandString);
     switch (cur_command) {
-      case QUIT: context.quit(); break;
+      case QUIT:
+        context.quit();
+        break;
+
       case SAVE_FILE:
-        if (commandArgs.size() == 1)
+        if (commandArgs.size() == 1) {
           context.saveFile(ws2s(commandArgs[0]));
-        else
+        } else {
           context.saveFile();
+        }
         break;
+
       case LOAD_FILE:
-        if (commandArgs.size() == 1)
+        if (commandArgs.size() == 1) {
           context.loadFile(ws2s(commandArgs[0]));
+        }
         break;
-      case EXPAND: context.expand(commandArgs[0], std::stoi(commandArgs[1])); break;
+
+      case EXPAND:
+        context.expand(commandArgs[0], std::stoi(commandArgs[1]));
+        break;
+
       case NEW_FILE:
         // if given
         if (commandArgs.size() == 2) {
           int32_t width  = std::stoi(commandArgs[0]),
                   height = std::stoi(commandArgs[1]);
-          if (width > 0 && height > 0)
+          if (width > 0 && height > 0) {
             context.newFile(width, height);
+          }
         }
         break;
+
       case PAL:
         // key_type_color_color
         if (commandArgs.size() == 5) {
@@ -80,9 +105,11 @@ class CommandParser {
             }
           }
         }
+        break;
+
       case SET:
         if (commandArgs[0] == L"paletteScale") {
-          context.rescalePalette(std::atof(ws2s(commandArgs[1]).c_str()));
+          context.rescalePalette(std::stoi(ws2s(commandArgs[1])));
         } else if (commandArgs[0] == L"fontSize") {
           context.setFontSize(std::stoi(commandArgs[1]));
         } else if (commandArgs[0] == L"gridStep") {
@@ -95,29 +122,7 @@ class CommandParser {
     return 0;
   }
 
-  /** for debugging */
-  std::wstring s2ws(const std::string& str) {
-    using convert_typeX = std::codecvt_utf8<wchar_t>;
-    std::wstring_convert<convert_typeX, wchar_t> converterX;
-    return converterX.from_bytes(str);
-  }
-
-  std::string ws2s(const std::wstring& wstr) {
-    using convert_typeX = std::codecvt_utf8<wchar_t>;
-    std::wstring_convert<convert_typeX, wchar_t> converterX;
-    return converterX.to_bytes(wstr);
-  }
-
-  int parseCommand(const std::wstring& commandString) {
-    setCommandNameArgs(commandString);
-    if (commandsDict.count(commandName) == 0) {
-      return ERROR;
-    } else {
-      return commandsDict.at(commandName);
-    }
-  }
-
-  int setCommandNameArgs(const std::wstring& command) {
+  void setCommandNameArgs(const std::wstring& command) {
     commandArgs   = {};
     auto spacePos = find(command.begin(), command.end(), ' ');
     commandName   = command.substr(0, spacePos - command.begin());
@@ -137,7 +142,14 @@ class CommandParser {
       }
       prevPos = spacePos;
     }
-    return 0;
+  }
+
+  int parseCommand(const std::wstring& commandString) const {
+    if (commandsDict.count(commandName) == 0) {
+      return ERROR;
+    } else {
+      return commandsDict.at(commandName);
+    }
   }
 };
 

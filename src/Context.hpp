@@ -165,8 +165,8 @@ class Context : public sf::Drawable {
   std::wstring_view statusLinePrefix;
   std::wstring_view statusLine;
 
-  void rescalePalette(const double paletteScale) {
-    paletteSize = paletteScale;
+  void rescalePalette(const unsigned newPaletteSize) {
+    paletteSize = newPaletteSize;
   }
 
   void setFontSize(const double newFontSize) { fontSize = newFontSize; }
