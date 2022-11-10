@@ -132,6 +132,8 @@ class Handler {
           case '0': command.push_back(c); break;
 
           case 'f': context.replacePrevColor(); break;
+
+          case 'u': context.undo(); break;
         }
         break;
 
