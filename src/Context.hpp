@@ -2,6 +2,11 @@
 #define Context_hpp_INCLUDED
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/View.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -59,6 +64,7 @@ class Context : public sf::Drawable {
   unsigned int paletteSize    = 22;
   unsigned int gridSize       = 4;
   unsigned int fontSize       = 16;
+  unsigned int previewSize    = 8;
   bool drawPalette            = true;
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
@@ -528,6 +534,30 @@ class Context : public sf::Drawable {
     wrapAround.setOutlineColor(sf::Color::Red);
     wrapAround.setOutlineThickness(-2.0f);
     target.draw(wrapAround);
+
+    // Preview
+    sf::Vector2f previewRectSize(image.getSize().x * previewSize,
+                             image.getSize().y * previewSize);
+    sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
+                            2.0f);
+
+    sf::View previewView(sf::FloatRect(0.0f, 0.0f, target.getSize().x, (float) target.getSize().y * mainSize.y / target.getSize().y));
+    previewView.setViewport(
+        sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
+    target.setView(previewView);
+
+    sf::RectangleShape previewBackground;
+    previewBackground.setPosition(previewPos);
+    previewBackground.setSize(previewRectSize);
+    previewBackground.setFillColor(sf::Color::Magenta);
+    previewBackground.setOutlineThickness(2.0f);
+    previewBackground.setOutlineColor(sf::Color::Black);
+    target.draw(previewBackground);
+
+    sprite.setPosition(previewPos);
+    sprite.setScale(previewSize, previewSize);
+    target.draw(sprite);
+
   }
 };
 
