@@ -46,8 +46,10 @@ class Handler {
       case MODE_NORMAL:
       case MODE_SELECTION: {
         if ((c < '0' || c > '9') && c != 'j' && c != 'k' && c != 'h' &&
-            c != 'l')
+            c != 'l') {
           command.clear();
+        }
+
         switch (c) {
           case ESCAPE:
             prevMode    = MODE_NORMAL;
@@ -186,11 +188,7 @@ class Handler {
     }
 
     context.statusLinePrefix = contextPrefix(currentMode);
-    if (currentMode == MODE_COMMAND) {
-      context.statusLine = command;
-    } else {
-      context.statusLine = std::wstring_view();
-    }
+    context.statusLine       = command;
   }
 };
 
