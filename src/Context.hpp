@@ -14,6 +14,13 @@
 #include <string_view>
 #include <vector>
 
+enum SelectionType {
+  ST_RECTANGLE,
+  ST_LINE,
+  ST_SNAKE,
+  ST_ELLIPSE,
+};
+
 inline bool isPaletteKey(sf::Uint32 c) {
   return ('0' <= c && c <= '9') || ('a' <= c && c <= 'z');
 }
@@ -43,13 +50,6 @@ inline sf::Color hsv(float h, float s, float v) {
   return sf::Color(255 * rgb.x, 255 * rgb.y, 255 * rgb.z);
 }
 
-enum SelectionType {
-  ST_RECTANGLE,
-  ST_LINE,
-  ST_SNAKE,
-  // ST_ELLIPSE,
-};
-
 class Context : public sf::Drawable {
   std::vector<sf::Vector2f> paletteCoordinates;
   std::vector<std::pair<std::size_t, std::size_t>> selectedPixels;
@@ -68,7 +68,6 @@ class Context : public sf::Drawable {
   bool drawPalette            = true;
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
-
 
   void updateSelectionRectangle() {
     selectedPixels.clear();
@@ -103,30 +102,59 @@ class Context : public sf::Drawable {
     long long y2 = cursor.y;
     long long dy = y2 < y1 ? -1 : 1;
 
-    long long kx = y1 - y2;
-    long long ky = x2 - x1;
+    auto kx = y1 - y2;
+    auto ky = x2 - x1;
 
-    long long x = x1;
-    long long y = y1;
+    auto x = x1;
+    auto y = y1;
     while (x != x2 || y != y2) {
       selectedPixels.push_back({x, y});
       long long xns[] = {x, x + dx, x + dx};
       long long yns[] = {y + dy, y + dy, y};
-      long long bestD = 0x7fffffff;
-      long long bestX = 0;
-      long long bestY = 0;
+      long long bestD = 0x7fffffffll;
       for (int i = 0; i < 3; ++i) {
-        long long d = std::abs(kx * (xns[i] - x1) + ky * (yns[i] - y1));
+        auto d = std::abs(kx * (xns[i] - x1) + ky * (yns[i] - y1));
         if (d < bestD) {
           bestD = d;
-          bestX = xns[i];
-          bestY = yns[i];
+          x     = xns[i];
+          y     = yns[i];
         }
       }
-      x = bestX;
-      y = bestY;
     }
     selectedPixels.push_back({x2, y2});
+  }
+
+  void updateSelectionEllipse() {
+    if (cursor.x == select.x || cursor.y == select.y) {
+      updateSelectionRectangle();
+      return;
+    }
+    selectedPixels.clear();
+    long long x1 = std::min(cursor.x, select.x);
+    long long y1 = std::min(cursor.y, select.y);
+    long long x2 = std::max(cursor.x, select.x);
+    long long y2 = std::max(cursor.y, select.y);
+    auto xc      = x1 + x2;
+    auto yc      = y1 + y2;
+    // (x - xc)^2 / rx^2 + (y - yc)^2 / ry^2 = 1
+    // (x - xc)^2 * ry^2 + (y - yc)^2 * rx^2 = rx^2 * ry^2
+    auto rx  = x2 - x1 + 1;
+    auto ry  = y2 - y1 + 1;
+    auto rx2 = rx * rx;
+    auto ry2 = ry * ry;
+    for (auto x = x1; x <= x2; ++x) {
+      for (auto y = y1; y <= y2; ++y) {
+        auto dx = std::abs(2 * x - xc);
+        auto dy = std::abs(2 * y - yc);
+        if (dx * dx * ry2 + dy * dy * rx2 > rx2 * ry2) {
+          continue;
+        }
+        if ((dx + 2) * (dx + 2) * ry2 + dy * dy * rx2 > rx2 * ry2 ||
+            dx * dx * ry2 + (dy + 2) * (dy + 2) * rx2 > rx2 * ry2) {
+          selectedPixels.push_back({x, y});
+        }
+      }
+    }
   }
 
   void updateSelectionSnake() {
@@ -142,13 +170,9 @@ class Context : public sf::Drawable {
     paletteSize *= paletteScale;
   }
 
-  void setFontSize(const double newFontSize) {
-    fontSize = newFontSize;
-  }
+  void setFontSize(const double newFontSize) { fontSize = newFontSize; }
 
-  void setGridStep(const unsigned newGridStep) {
-    gridSize = newGridStep;
-  }
+  void setGridStep(const unsigned newGridStep) { gridSize = newGridStep; }
 
   Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);
@@ -262,6 +286,7 @@ class Context : public sf::Drawable {
       case ST_RECTANGLE: updateSelectionRectangle(); break;
       case ST_LINE: updateSelectionLine(); break;
       case ST_SNAKE: updateSelectionSnake(); break;
+      case ST_ELLIPSE: updateSelectionEllipse(); break;
     }
   }
 
@@ -285,15 +310,11 @@ class Context : public sf::Drawable {
           int nx = x + dx;
           int ny = y + dy;
           if (0 <= nx && nx < w && 0 <= ny && ny < h &&
-              (image.getPixel(nx, ny).toInteger() | 0xff) ==
-                  (image.getPixel(cursor.x, cursor.y).toInteger() | 0xff)) {
+              image.getPixel(nx, ny) == image.getPixel(cursor.x, cursor.y)) {
             queue.push({nx, ny});
           }
         }
       }
-    }
-    for (std::size_t i = 0; 2 * i < selectedPixels.size(); ++i) {
-      std::swap(selectedPixels[i], selectedPixels[selectedPixels.size() - 1 - i]);
     }
   }
 
@@ -489,8 +510,11 @@ class Context : public sf::Drawable {
 
     backgroundRect.setSize(sf::Vector2f(1, 1));
     backgroundRect.setFillColor(sf::Color(0xcc00ffff));
-    for (size_t i = 0; i + 1 < selectedPixels.size(); ++i) {
+    for (size_t i = 0; i < selectedPixels.size(); ++i) {
       auto const& [x, y] = selectedPixels[i];
+      if (x == cursor.x && y == cursor.y) {
+        continue;
+      }
       backgroundRect.setPosition(x, y);
       target.draw(backgroundRect);
       sprite.setPosition(x, y);
@@ -556,11 +580,13 @@ class Context : public sf::Drawable {
 
     // Preview
     sf::Vector2f previewRectSize(image.getSize().x * previewSize,
-                             image.getSize().y * previewSize);
+                                 image.getSize().y * previewSize);
     sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
                             2.0f);
 
-    sf::View previewView(sf::FloatRect(0.0f, 0.0f, target.getSize().x, (float) target.getSize().y * mainSize.y / target.getSize().y));
+    sf::View previewView(sf::FloatRect(
+        0.0f, 0.0f, target.getSize().x,
+        (float)target.getSize().y * mainSize.y / target.getSize().y));
     previewView.setViewport(
         sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
     target.setView(previewView);

@@ -110,6 +110,11 @@ class Handler {
             context.setSelectionType(ST_LINE);
             break;
 
+          case 'E':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_ELLIPSE);
+            break;
+
           case 'S':
             currentMode = MODE_SELECTION;
             context.setSelectionType(ST_SNAKE);
