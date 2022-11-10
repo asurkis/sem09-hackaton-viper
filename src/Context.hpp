@@ -48,6 +48,7 @@ class Context : public sf::Drawable {
   std::vector<sf::Vector2f> paletteCoordinates;
   std::vector<std::pair<std::size_t, std::size_t>> selectedPixels;
   std::string lastFilepath;
+  std::deque<sf::Image> history;
   sf::Texture texture;
   sf::Image image;
   sf::Font mainFont;
@@ -186,6 +187,7 @@ class Context : public sf::Drawable {
     image.loadFromFile(lastFilepath);
     texture.loadFromImage(image);
 
+    history.clear();
     cursor = sf::Vector2u();
     select = sf::Vector2u();
     updateSelection();
@@ -196,6 +198,7 @@ class Context : public sf::Drawable {
     texture.loadFromImage(image);
     lastFilepath.clear();
 
+    history.clear();
     cursor = sf::Vector2u();
     select = sf::Vector2u();
     updateSelection();
@@ -271,12 +274,22 @@ class Context : public sf::Drawable {
   }
 
   void replaceColorRgb(sf::Color color) {
-    sf::Image buf;
-    buf.create(1, 1, color);
+    history.push_back(image);
+    while (history.size() > 128) {
+      history.pop_front();
+    }
     for (auto const& [x, y] : selectedPixels) {
       image.setPixel(x, y, color);
     }
     texture.loadFromImage(image);
+  }
+
+  void undo() {
+    if (!history.empty()) {
+      image = history.back();
+      history.pop_back();
+      texture.loadFromImage(image);
+    }
   }
 
   void replaceColor(int paletteId) {
