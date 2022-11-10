@@ -432,7 +432,7 @@ class Context : public sf::Drawable {
     sf::Text text;
     text.setString(std::wstring(statusLinePrefix) + std::wstring(statusLine));
     text.setFont(mainFont);
-    text.setFillColor(sf::Color::Black);
+    text.setFillColor(sf::Color::White);
     text.setCharacterSize(fontSize);
 
     sf::Vector2u mainSize = target.getSize();
@@ -444,7 +444,7 @@ class Context : public sf::Drawable {
     sf::RectangleShape backgroundRect;
     backgroundRect.setPosition(sf::Vector2f(0.0f, mainSize.y));
     backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
-    backgroundRect.setFillColor(sf::Color(0xcccc00ff));
+    backgroundRect.setFillColor(sf::Color(0x152238ff));
 
     if (fontSize > 0) {
       target.draw(backgroundRect);
@@ -457,10 +457,20 @@ class Context : public sf::Drawable {
       mainSize.y -= 4 * paletteSize + minorShift * 2;
       float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
       sf::RectangleShape currentColor;
+
+      sf::RectangleShape paletteBackground;
+      paletteBackground.setPosition(0.0f, mainSize.y);
+      paletteBackground.setSize(sf::Vector2f(target.getSize().x,
+                                             paletteSize * 4 + 
+                                             minorShift * 2));
+      paletteBackground.setFillColor(sf::Color(0x1c2e4aff));
+      target.draw(paletteBackground);
+
       for (int i = 0; i < palette.size(); ++i) {
         if (!isPaletteKey(i)) {
           continue;
         }
+
         sf::RectangleShape paletteRectangle;
         sf::Vector2f palettePos;
         palettePos.x = paletteCoordinates[i].y * paletteSize + paletteShift +
@@ -470,9 +480,11 @@ class Context : public sf::Drawable {
         paletteRectangle.setPosition(palettePos);
         paletteRectangle.setSize(sf::Vector2f(paletteSize, paletteSize));
         paletteRectangle.setFillColor(palette[i]);
+
         if (i == prev_c) {
           currentColor = paletteRectangle;
         }
+        
         paletteRectangle.setOutlineThickness(1.0f);
         paletteRectangle.setOutlineColor(sf::Color::Black);
         target.draw(paletteRectangle);
@@ -488,6 +500,7 @@ class Context : public sf::Drawable {
           target.draw(serif);
         }
       }
+
       currentColor.setFillColor(sf::Color::Transparent);
       currentColor.setOutlineThickness(2.0f);
       currentColor.setOutlineColor(sf::Color::Cyan);
