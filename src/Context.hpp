@@ -499,11 +499,15 @@ class Context : public sf::Drawable {
       target.draw(sprite);
     }
 
+    sprite.setTextureRect(
+        sf::IntRect(0, 0, image.getSize().x, image.getSize().y));
+
     target.setView(currentView);
 
     sf::Vector2f imageTopLeftPos(
         (mainSize.x - pixelSize * image.getSize().x) / 2.0f - 1,
         (mainSize.y - pixelSize * image.getSize().y) / 2.0f - 1);
+
     // Grid
     if (gridSize > 0) {
       sf::RectangleShape imageFrame;
@@ -572,7 +576,6 @@ class Context : public sf::Drawable {
     sprite.setPosition(previewPos);
     sprite.setScale(previewSize, previewSize);
     target.draw(sprite);
-
   }
 };
 
