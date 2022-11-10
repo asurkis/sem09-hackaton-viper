@@ -478,7 +478,17 @@ class Context : public sf::Drawable {
         target.draw(paletteRectangle);
         paletteRectangle.setOutlineThickness(-1.0f);
         target.draw(paletteRectangle);
+
+        if (i == 'f' || i == 'j') {
+          sf::RectangleShape serif;
+          serif.setSize(sf::Vector2f(paletteSize / 3, 2));
+          serif.setPosition(palettePos + 
+              sf::Vector2f(paletteSize / 3, 2 * paletteSize / 3));
+          serif.setFillColor(sf::Color::Black);
+          target.draw(serif);
+        }
       }
+      currentColor.setFillColor(sf::Color::Transparent);
       currentColor.setOutlineThickness(2.0f);
       currentColor.setOutlineColor(sf::Color::Cyan);
       target.draw(currentColor);
@@ -530,6 +540,7 @@ class Context : public sf::Drawable {
 
     sprite.setTextureRect(
         sf::IntRect(0, 0, image.getSize().x, image.getSize().y));
+    sprite.setColor(sf::Color::White);
 
     target.setView(currentView);
 
