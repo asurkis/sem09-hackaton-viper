@@ -173,6 +173,10 @@ class Context : public sf::Drawable {
 
   void setGridStep(const unsigned newGridStep) { gridSize = newGridStep; }
 
+  void setPreviewScale(const unsigned newPreviewScale) {
+    previewSize = newPreviewScale;
+  }
+
   Context() : palette(128), paletteCoordinates(128), prev_c('0') {
     paletteCoordinates['0'] = sf::Vector2f(0, 9);
 
@@ -580,29 +584,31 @@ class Context : public sf::Drawable {
     target.draw(wrapAround);
 
     // Preview
-    sf::Vector2f previewRectSize(image.getSize().x * previewSize,
-                                 image.getSize().y * previewSize);
-    sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
-                            2.0f);
+    if (previewSize > 0) {
+      sf::Vector2f previewRectSize(image.getSize().x * previewSize,
+                                   image.getSize().y * previewSize);
+      sf::Vector2f previewPos(target.getSize().x - previewRectSize.x - 2.0f,
+                              2.0f);
 
-    sf::View previewView(sf::FloatRect(
-        0.0f, 0.0f, target.getSize().x,
-        (float)target.getSize().y * mainSize.y / target.getSize().y));
-    previewView.setViewport(
-        sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
-    target.setView(previewView);
+      sf::View previewView(sf::FloatRect(
+          0.0f, 0.0f, target.getSize().x,
+          (float)target.getSize().y * mainSize.y / target.getSize().y));
+      previewView.setViewport(
+          sf::FloatRect(0.f, 0.f, 1.f, (float)mainSize.y / target.getSize().y));
+      target.setView(previewView);
 
-    sf::RectangleShape previewBackground;
-    previewBackground.setPosition(previewPos);
-    previewBackground.setSize(previewRectSize);
-    previewBackground.setFillColor(sf::Color::Magenta);
-    previewBackground.setOutlineThickness(2.0f);
-    previewBackground.setOutlineColor(sf::Color::Black);
-    target.draw(previewBackground);
+      sf::RectangleShape previewBackground;
+      previewBackground.setPosition(previewPos);
+      previewBackground.setSize(previewRectSize);
+      previewBackground.setFillColor(sf::Color::Magenta);
+      previewBackground.setOutlineThickness(2.0f);
+      previewBackground.setOutlineColor(sf::Color::Black);
+      target.draw(previewBackground);
 
-    sprite.setPosition(previewPos);
-    sprite.setScale(previewSize, previewSize);
-    target.draw(sprite);
+      sprite.setPosition(previewPos);
+      sprite.setScale(previewSize, previewSize);
+      target.draw(sprite);
+    }
   }
 };
 
