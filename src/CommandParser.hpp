@@ -87,9 +87,7 @@ class CommandParser {
           context.setFontSize(std::stoi(commandArgs[1]));
         } else if (commandArgs[0] == L"gridStep") {
           context.setGridStep(std::stoi(commandArgs[1]));
-        } else if (commandArgs[0] == L"previewScale") {
-          std::cout << "WHAT";
-        }
+        } 
         break;
     }
     return 0;
