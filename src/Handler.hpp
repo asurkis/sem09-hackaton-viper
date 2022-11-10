@@ -110,6 +110,11 @@ class Handler {
             context.setSelectionType(ST_LINE);
             break;
 
+          case 'S':
+            currentMode = MODE_SELECTION;
+            context.setSelectionType(ST_SNAKE);
+            break;
+
           case 'm':
             currentMode = MODE_NORMAL;
             context.selectSameColor();
@@ -125,6 +130,10 @@ class Handler {
             currentMode = MODE_PICK_UP;
             break;
 
+          case 'f': context.replacePrevColor(); break;
+
+          case 'u': context.undo(); break;
+
           case '1':
           case '2':
           case '3':
@@ -135,10 +144,6 @@ class Handler {
           case '8':
           case '9':
           case '0': command.push_back(c); break;
-
-          case 'f': context.replacePrevColor(); break;
-
-          case 'u': context.undo(); break;
         }
       } break;
 

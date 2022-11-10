@@ -41,6 +41,7 @@ inline sf::Color hsv(float h, float s, float v) {
 enum SelectionType {
   ST_RECTANGLE,
   ST_LINE,
+  ST_SNAKE,
   // ST_ELLIPSE,
 };
 
@@ -63,13 +64,14 @@ class Context : public sf::Drawable {
   SelectionType selectionType = ST_RECTANGLE;
 
   void updateSelectionRectangle() {
-    int x1 = cursor.x;
-    int x2 = select.x;
+    selectedPixels.clear();
+    int x1 = select.x;
+    int x2 = cursor.x;
     int dx = x2 < x1 ? -1 : 1;
     x2 += dx;
 
-    int y1 = cursor.y;
-    int y2 = select.y;
+    int y1 = select.y;
+    int y2 = cursor.y;
     int dy = y2 < y1 ? -1 : 1;
     y2 += dy;
 
@@ -81,16 +83,17 @@ class Context : public sf::Drawable {
   }
 
   void updateSelectionLine() {
+    selectedPixels.clear();
     // Линия: (x - x1) * kx + (y - y1) * ky = 0
     // (x2 - x1) * kx = -(y2 - y1) * ky
     // kx = y1 - y2
     // ky = x2 - x1
-    long long x1 = cursor.x;
-    long long x2 = select.x;
+    long long x1 = select.x;
+    long long x2 = cursor.x;
     long long dx = x2 < x1 ? -1 : 1;
 
-    long long y1 = cursor.y;
-    long long y2 = select.y;
+    long long y1 = select.y;
+    long long y2 = cursor.y;
     long long dy = y2 < y1 ? -1 : 1;
 
     long long kx = y1 - y2;
@@ -117,6 +120,10 @@ class Context : public sf::Drawable {
       y = bestY;
     }
     selectedPixels.push_back({x2, y2});
+  }
+
+  void updateSelectionSnake() {
+    selectedPixels.push_back({cursor.x, cursor.y});
   }
 
  public:
@@ -232,10 +239,10 @@ class Context : public sf::Drawable {
   }
 
   void updateSelection() {
-    selectedPixels.clear();
     switch (selectionType) {
       case ST_RECTANGLE: updateSelectionRectangle(); break;
       case ST_LINE: updateSelectionLine(); break;
+      case ST_SNAKE: updateSelectionSnake(); break;
     }
   }
 
@@ -266,10 +273,14 @@ class Context : public sf::Drawable {
         }
       }
     }
+    for (std::size_t i = 0; 2 * i < selectedPixels.size(); ++i) {
+      std::swap(selectedPixels[i], selectedPixels[selectedPixels.size() - 1 - i]);
+    }
   }
 
   void dropSelection() {
     select = cursor;
+    selectedPixels.clear();
     updateSelection();
   }
 
@@ -459,7 +470,7 @@ class Context : public sf::Drawable {
 
     backgroundRect.setSize(sf::Vector2f(1, 1));
     backgroundRect.setFillColor(sf::Color(0xcc00ffff));
-    for (size_t i = 1; i < selectedPixels.size(); ++i) {
+    for (size_t i = 0; i + 1 < selectedPixels.size(); ++i) {
       auto const& [x, y] = selectedPixels[i];
       backgroundRect.setPosition(x, y);
       target.draw(backgroundRect);
