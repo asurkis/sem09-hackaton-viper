@@ -5,7 +5,7 @@
 #include "Handler.hpp"
 
 int main(int argc, char** argv) {
-  sf::RenderWindow window(sf::VideoMode(800, 600), "My window");
+  sf::RenderWindow window(sf::VideoMode(800, 600), "Viper");
 
   Handler handler;
   Context context;
