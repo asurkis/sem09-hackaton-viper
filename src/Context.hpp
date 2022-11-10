@@ -65,7 +65,6 @@ class Context : public sf::Drawable {
   unsigned int gridSize       = 4;
   unsigned int fontSize       = 16;
   unsigned int previewSize    = 8;
-  bool drawPalette            = true;
   bool quitting               = false;
   SelectionType selectionType = ST_RECTANGLE;
 
@@ -167,7 +166,7 @@ class Context : public sf::Drawable {
   std::wstring_view statusLine;
 
   void rescalePalette(const double paletteScale) {
-    paletteSize *= paletteScale;
+    paletteSize = paletteScale;
   }
 
   void setFontSize(const double newFontSize) { fontSize = newFontSize; }
@@ -443,11 +442,13 @@ class Context : public sf::Drawable {
     backgroundRect.setSize(sf::Vector2f(mainSize.x, lineSpacing * 3 / 2));
     backgroundRect.setFillColor(sf::Color(0xcccc00ff));
 
-    target.draw(backgroundRect);
-    target.draw(text);
+    if (fontSize > 0) {
+      target.draw(backgroundRect);
+      target.draw(text);
+    }
 
     // Palette
-    if (drawPalette) {
+    if (paletteSize > 0) {
       unsigned int minorShift = 4;
       mainSize.y -= 4 * paletteSize + minorShift * 2;
       float paletteShift = (mainSize.x - 10.5f * paletteSize) / 2.0f;
