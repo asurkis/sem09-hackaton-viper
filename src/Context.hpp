@@ -368,6 +368,7 @@ class Context : public sf::Drawable {
   }
 
   void expand(const std::wstring& direction, int offset) {
+    history.push_back(image);
     int sizeX = image.getSize().x;
     int sizeY = image.getSize().y;
 
